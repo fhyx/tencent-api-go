@@ -4,5 +4,5 @@ Client packages for tencent API, like ExMail, ExWechat, ...
 
 ## Features
 
-- `GetUser(alias string) (*User, error)`
-- `CountNewMail(alias string) (int, error)`
+- `exmail.GetUser(alias string) (*User, error)`
+- `exmail.CountNewMail(alias string) (int, error)`
