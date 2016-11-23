@@ -23,7 +23,7 @@ type TokenHolder struct {
 	apiAuths     string
 	clientId     string
 	clientSecret string
-	expiresIn    int64
+	expiresAt    int64
 }
 
 var (
@@ -47,16 +47,18 @@ func (th *TokenHolder) SetClient(id, secret string) {
 }
 
 func (th *TokenHolder) Expired() bool {
-	return th.expiresIn < time.Now().Unix()
+	return th.expiresAt < time.Now().Unix()
 }
 
 func (th *TokenHolder) GetAuthToken() (token string, err error) {
 	if th.currToken == nil || th.Expired() {
+		log.Print("token is nil or expired, refreshing it")
 		th.currToken, err = th.requestToken()
 		if err != nil {
 			return "", err
 		}
-		th.expiresIn = th.currToken.ExpiresIn
+		log.Print("got token", th.currToken)
+		th.expiresAt = time.Now().Unix() + th.currToken.ExpiresIn
 	}
 	token = th.currToken.AccessToken
 	return
