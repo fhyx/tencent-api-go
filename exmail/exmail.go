@@ -13,6 +13,8 @@ import (
 const (
 	urlToken     = "https://exmail.qq.com/cgi-bin/token"
 	apiBase      = "http://openapi.exmail.qq.com:12211/openapi/"
+	urlAuthKey   = "http://openapi.exmail.qq.com:12211/openapi/mail/authkey"
+	urlLogin     = "https://exmail.qq.com/cgi-bin/login?fun=bizopenssologin&method=bizauth&agent=%s&user=%s&ticket=%s"
 	urlUserGet   = "http://openapi.exmail.qq.com:12211/openapi/user/get"
 	urlNewCount  = "http://openapi.exmail.qq.com:12211/openapi/mail/newcount"
 	urlPartyList = "http://openapi.exmail.qq.com:12211/openapi/party/list"
@@ -28,6 +30,7 @@ const (
 
 var (
 	holder *client.TokenHolder
+	agent  string
 )
 
 func init() {
@@ -36,6 +39,8 @@ func init() {
 	if auths != "" {
 		holder.SetAuth("Basic " + auths)
 	}
+
+	agent = os.Getenv("EXMAIL_LOGIN_AGENT")
 }
 
 /*{
@@ -76,30 +81,39 @@ func (e *apiError) Error() string {
 	return fmt.Sprintf("%s:%s %q", e.ErrCode, e.ErrMsg, e.Arg)
 }
 
+type authTicket struct {
+	Ticket string `json:"auth_key"`
+}
+
+func GetAuthTicket(alias string) (string, error) {
+	obj := &authTicket{}
+	err := request(urlAuthKey, "alias="+alias, obj)
+	if err != nil {
+		return "", err
+	}
+	return obj.Ticket, nil
+}
+
+func GetLoginURL(alias string) (string, error) {
+	ticket, err := GetAuthTicket(alias)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf(urlLogin, agent, alias, ticket), nil
+}
+
 type newCount struct {
 	Alias    string
 	NewCount json.Number
 }
 
 func CountNewMail(alias string) (int, error) {
-	token, err := holder.GetAuthToken()
-	if err != nil {
-		return 0, err
-	}
-	auths := "Bearer " + token
-	resp, err := client.DoHTTP("POST", urlNewCount, auths, bytes.NewBufferString("alias="+alias))
-	if err != nil {
-		log.Printf("doHTTP err %s", err)
-		return 0, err
-	}
-
-	log.Printf("resp: %s", resp)
-
 	obj := &newCount{}
 
-	if e := json.Unmarshal(resp, obj); e != nil {
-		log.Printf("unmarshal user err %s", e)
-		return 0, e
+	err := request(urlNewCount, "alias="+alias, obj)
+	if err != nil {
+		return 0, err
 	}
 
 	count, err := obj.NewCount.Int64()
@@ -110,35 +124,44 @@ func CountNewMail(alias string) (int, error) {
 }
 
 func GetUser(alias string) (*User, error) {
-	token, err := holder.GetAuthToken()
+	obj := &User{}
+	err := request(urlUserGet, "alias="+alias, obj)
 	if err != nil {
 		return nil, err
 	}
+
+	return obj, nil
+}
+
+func request(url, body string, obj interface{}) error {
+	token, err := holder.GetAuthToken()
+	if err != nil {
+		return err
+	}
 	auths := "Bearer " + token
-	resp, err := client.DoHTTP("POST", urlUserGet, auths, bytes.NewBufferString("alias="+alias))
+	resp, err := client.DoHTTP("POST", url, auths, bytes.NewBufferString(body))
 	if err != nil {
 		log.Printf("doHTTP err %s", err)
-		return nil, err
+		return err
 	}
 
 	log.Printf("resp: %s", resp)
 
-	exErr := &apiError{Arg: alias}
+	exErr := &apiError{Arg: body}
 	if e := json.Unmarshal(resp, exErr); e != nil {
 		log.Printf("unmarshal api err %s", e)
-		return nil, e
+		return e
 	}
 
 	if exErr.ErrCode != "" {
 		log.Printf("apiError %s", exErr)
-		return nil, exErr
+		return exErr
 	}
 
-	obj := &User{}
 	if e := json.Unmarshal(resp, obj); e != nil {
 		log.Printf("unmarshal user err %s", e)
-		return nil, e
+		return e
 	}
 
-	return obj, nil
+	return nil
 }
