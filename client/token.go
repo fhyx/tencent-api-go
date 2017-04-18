@@ -14,6 +14,7 @@ type Token struct {
 	TokenType    string `json:"token_type,omitempty"`
 	ExpiresIn    int64  `json:"expires_in"`
 	RefreshToken string `json:"refresh_token,omitempty"`
+	Error
 }
 
 type TokenHolder struct {
@@ -69,7 +70,6 @@ func (th *TokenHolder) requestToken() (token *Token, err error) {
 	if th.apiAuths != "" { // for ExMail
 		body_str := "grant_type=client_credentials"
 		resp, err = DoHTTP("POST", th.base, th.apiAuths, bytes.NewBufferString(body_str))
-
 	} else if th.clientId != "" && th.clientSecret != "" { // for ExWechat
 		uri := fmt.Sprintf("%s?corpid=%s&corpsecret=%s", th.base, th.clientId, th.clientSecret)
 		resp, err = DoHTTP("GET", uri, "", nil)
