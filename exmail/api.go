@@ -19,9 +19,6 @@ var (
 
 func init() {
 	corpId = os.Getenv("EXMAIL_CORP_ID")
-	if corpId == "" {
-		panic("EXMAIL_CORP_ID is empty or not found")
-	}
 
 }
 
@@ -31,6 +28,9 @@ type API struct {
 
 // apps: Contact, Login, Check
 func New(apiCat string) *API {
+	if corpId == "" {
+		panic("EXMAIL_CORP_ID is empty or not found")
+	}
 	if apiCat == "" {
 		log.Print("empty apiCat")
 	}

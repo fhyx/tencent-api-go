@@ -22,9 +22,6 @@ var (
 func init() {
 	corpId = os.Getenv("EXWECHAT_CORP_ID")
 	corpSecret = os.Getenv("EXWECHAT_CORP_SECRET")
-	if corpId == "" || corpSecret == "" {
-		panic("EXWECHAT_CORP_ID or EXWECHAT_CORP_SECRET are empty or not found")
-	}
 }
 
 type API struct {
@@ -32,6 +29,9 @@ type API struct {
 }
 
 func NewAPI() *API {
+	if corpId == "" || corpSecret == "" {
+		panic("EXWECHAT_CORP_ID or EXWECHAT_CORP_SECRET are empty or not found")
+	}
 	c := client.NewClient(urlToken)
 	c.SetContentType("application/json")
 	c.SetCorp(corpId, corpSecret)
