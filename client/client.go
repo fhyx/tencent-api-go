@@ -3,26 +3,37 @@ package client
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
+
+	. "github.com/tj/go-debug"
 )
 
 type Client struct {
+	*TokenHolder
 	httpClient *http.Client
 	auths      string
 	ctype      string
 }
 
-func NewClient() *Client {
-	tr := &http.Transport{
+var (
+	tr = &http.Transport{
 		TLSClientConfig:    &tls.Config{InsecureSkipVerify: true},
 		DisableCompression: true,
 	}
+	debug = Debug("ex:client")
+)
+
+func NewClient(urlToken string) *Client {
+	hc := &http.Client{Transport: tr}
 	return &Client{
-		httpClient: &http.Client{Transport: tr},
+		httpClient:  hc,
+		TokenHolder: NewTokenHolder(urlToken),
 	}
 }
 
@@ -38,10 +49,24 @@ func (c *Client) SetContentType(ctype string) {
 	}
 }
 
-func (c *Client) Do(method, url string, body io.Reader) ([]byte, error) {
-	req, e := http.NewRequest(method, url, body)
+func (c *Client) Do(method, uri string, body io.Reader) ([]byte, error) {
+	token, err := c.GetAuthToken()
+	if err != nil {
+		return nil, err
+	}
+	u, err := url.Parse(uri)
+	if err != nil {
+		return nil, err
+	}
+	q := u.Query()
+	q.Set("access_token", token)
+	u.RawQuery = q.Encode()
+	uri = u.String()
+
+	debug("Do(%s, %s)", method, uri)
+	req, e := http.NewRequest(method, uri, body)
 	if e != nil {
-		log.Println(e, method, url)
+		log.Println(e, method, uri)
 		return nil, e
 	}
 
@@ -56,9 +81,17 @@ func (c *Client) Do(method, url string, body io.Reader) ([]byte, error) {
 		req.Header.Set("Authorization", c.auths)
 	}
 
-	resp, e := c.httpClient.Do(req)
+	return doRequest(c.httpClient, req)
+}
+
+func (c *Client) request(req *http.Request) ([]byte, error) {
+	return doRequest(c.httpClient, req)
+}
+
+func doRequest(client *http.Client, req *http.Request) ([]byte, error) {
+	resp, e := client.Do(req)
 	if e != nil {
-		log.Printf("client %s %s ERR %s", method, url, e)
+		log.Printf("client %s %s ERR %s", req.Method, req.RequestURI, e)
 		return nil, e
 	}
 	defer resp.Body.Close()
@@ -75,18 +108,62 @@ func (c *Client) Do(method, url string, body io.Reader) ([]byte, error) {
 	}
 
 	return rbody, nil
+
 }
 
-func DoHTTP(method, url string, auths string, body io.Reader) ([]byte, error) {
-	c := NewClient()
-	c.SetAuth(auths)
-	return c.Do(method, url, body)
+func DoHTTP(method, uri string, auths string, body io.Reader) ([]byte, error) {
+	req, err := http.NewRequest(method, uri, body)
+	if err != nil {
+		return nil, err
+	}
+	if auths != "" {
+		req.Header.Set("Authorization", auths)
+	}
+	hc := &http.Client{Transport: tr}
+	return doRequest(hc, req)
 }
 
-func (c *Client) Get(url string) ([]byte, error) {
-	return c.Do("GET", url, nil)
+func (c *Client) Get(uri string) ([]byte, error) {
+	return c.Do("GET", uri, nil)
 }
 
-func (c *Client) Post(url string, data []byte) ([]byte, error) {
-	return c.Do("POST", url, bytes.NewReader(data))
+func (c *Client) Post(uri string, data []byte) ([]byte, error) {
+	return c.Do("POST", uri, bytes.NewReader(data))
+}
+
+func (c *Client) GetJSON(uri string, obj interface{}) error {
+	body, err := c.Get(uri)
+	if err != nil {
+		return err
+	}
+	return parseResult(body, obj)
+}
+
+func (c *Client) PostJSON(uri string, data []byte, obj interface{}) error {
+	body, err := c.Post(uri, data)
+	if err != nil {
+		return err
+	}
+	return parseResult(body, obj)
+}
+
+func parseResult(resp []byte, obj interface{}) error {
+	// log.Printf("parse result: %s", string(resp))
+	exErr := &Error{}
+	if e := json.Unmarshal(resp, exErr); e != nil {
+		log.Printf("unmarshal api err %s", e)
+		return e
+	}
+
+	if exErr.ErrCode != 0 {
+		log.Printf("apiError %s", exErr)
+		return exErr
+	}
+
+	if e := json.Unmarshal(resp, obj); e != nil {
+		log.Printf("unmarshal user err %s", e)
+		return e
+	}
+
+	return nil
 }

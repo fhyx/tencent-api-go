@@ -1,23 +1,20 @@
 package exmail
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/wealthworks/go-tencent-api/client"
+	"github.com/wealthworks/go-tencent-api/gender"
 )
 
 const (
-	urlToken     = "https://exmail.qq.com/cgi-bin/token"
-	apiBase      = "http://openapi.exmail.qq.com:12211/openapi/"
-	urlAuthKey   = "http://openapi.exmail.qq.com:12211/openapi/mail/authkey"
-	urlLogin     = "https://exmail.qq.com/cgi-bin/login?fun=bizopenssologin&method=bizauth&agent=%s&user=%s&ticket=%s"
-	urlUserGet   = "http://openapi.exmail.qq.com:12211/openapi/user/get"
-	urlNewCount  = "http://openapi.exmail.qq.com:12211/openapi/mail/newcount"
-	urlPartyList = "http://openapi.exmail.qq.com:12211/openapi/party/list"
+	urlToken     = "https://api.exmail.qq.com/cgi-bin/gettoken"
+	urlGetLogin  = "https://api.exmail.qq.com/cgi-bin/service/get_login_url"
+	urlUserGet   = "https://api.exmail.qq.com/cgi-bin/user/get"
+	urlNewCount  = "https://api.exmail.qq.com/cgi-bin/mail/newcount"
+	urlPartyList = "https://api.exmail.qq.com/cgi-bin/department/list"
 )
 
 type OpenType uint8
@@ -28,90 +25,64 @@ const (
 	OTDisabled OpenType = 2
 )
 
-var (
-	holder *client.TokenHolder
-	agent  string
-)
-
-func init() {
-	holder = client.NewTokenHolder(urlToken)
-	auths := os.Getenv("EXMAIL_API_AUTHS")
-	if auths != "" {
-		holder.SetAuth("Basic " + auths)
-	}
-
-	agent = os.Getenv("EXMAIL_LOGIN_AGENT")
+/*
+{
+   "errcode": 0,
+   "errmsg": "ok",
+   "userid": " zhangsan@gzdev.com ",
+   "name": "李四",
+   "department": [1, 2],
+   "position": "后台工程师",
+   "mobile": "15913215421",
+   "gender": "1",
+   "enable": "1",
+   "slaves":[ zhangsan@gz.com, zhangsan@bjdev.com],
+   "cpwd_login":0
 }
-
-/*{
-"Alias": " test2@gzservice.com",
-"Name": "鲍勃",
-"Gender": 1,
-"SlaveList": "bb@gzdev.com,bo@gzdev.com",
-"Position": "工程师",
-"Tel": "62394",
-"Mobile": "",
-"ExtId": "100",
-"PartyList": {
-	"Count": 3,
-	"List": [{ "Value":"部门 a" }
-		,{ "Value":"部门 B/部门 b" }
-		,{"Value":"部门 c" }
-}}*/
+*/
 type User struct {
-	Alias    string   `json:"Alias"`
-	Name     string   `json:"Name"`
-	Aliases  string   `json:"SlaveList"`
-	Gender   uint8    `json:"Gender"`
-	Title    string   `json:"Position"`
-	ExtId    string   `json:"ExtId"`
-	Tel      string   `json:"Tel"`
-	Mobile   string   `json:"Mobile"`
-	OpenType OpenType `json:"OpenType"`
+	client.Error
+	Alias      string        `json:"userid"` // main email
+	Name       string        `json:"name"`
+	Gender     gender.Gender `json:"gender,omitempty"`
+	Title      string        `json:"position,omitempty"`
+	ExtId      string        `json:"extid,omitempty"`
+	Tel        string        `json:"tel,omitempty"`
+	Mobile     string        `json:"mobile,omitempty"`
+	Slaves     []string      `json:"slaves"` // email aliases
+	department []int         `json:"department,omitempty"`
+	Enable     uint8         `json:"enable,omitempty"`
+	// OpenType   OpenType      `json:"OpenType"`
 	// TODO: PartyList
 }
 
-type apiError struct {
-	Arg     string `json:"arg"`
-	ErrCode string `json:"errcode"`
-	ErrMsg  string `json:"error"`
-}
-
-func (e *apiError) Error() string {
-	return fmt.Sprintf("%s:%s %q", e.ErrCode, e.ErrMsg, e.Arg)
-}
-
-type authTicket struct {
-	Ticket string `json:"auth_key"`
-}
-
-func GetAuthTicket(alias string) (string, error) {
-	obj := &authTicket{}
-	err := request(urlAuthKey, "alias="+alias, obj)
-	if err != nil {
-		return "", err
-	}
-	return obj.Ticket, nil
+type loginUrl struct {
+	client.Error
+	LoginUrl  string `json:"login_url,omitempty"`
+	ExpiresIn int64  `json:"expires_in,omitempty"`
 }
 
 func GetLoginURL(alias string) (string, error) {
-	ticket, err := GetAuthTicket(alias)
+	obj := &loginUrl{}
+	u := fmt.Sprintf("%s?userid=%s", urlGetLogin, alias)
+	err := ApiLogin().c.GetJSON(u, obj)
 	if err != nil {
 		return "", err
 	}
 
-	return fmt.Sprintf(urlLogin, agent, alias, ticket), nil
+	return obj.LoginUrl, nil
+	// return fmt.Sprintf(urlLogin, agent, alias, ticket), nil
 }
 
 type newCount struct {
-	Alias    string
-	NewCount json.Number
+	Alias    string      `json:"alias,omitempty"`
+	NewCount json.Number `json:"count,omitempty"`
 }
 
 func CountNewMail(alias string) (int, error) {
 	obj := &newCount{}
 
-	err := request(urlNewCount, "alias="+alias, obj)
+	err := ApiCheck().c.GetJSON(urlNewCount+"?userid="+alias, obj)
 	if err != nil {
 		return 0, err
 	}
@@ -125,43 +96,10 @@ func CountNewMail(alias string) (int, error) {
 
 func GetUser(alias string) (*User, error) {
 	obj := &User{}
-	err := request(urlUserGet, "alias="+alias, obj)
+	err := ApiContact().c.GetJSON(urlUserGet+"?userid="+alias, obj)
 	if err != nil {
 		return nil, err
 	}
 
 	return obj, nil
-}
-
-func request(url, body string, obj interface{}) error {
-	token, err := holder.GetAuthToken()
-	if err != nil {
-		return err
-	}
-	auths := "Bearer " + token
-	resp, err := client.DoHTTP("POST", url, auths, bytes.NewBufferString(body))
-	if err != nil {
-		log.Printf("doHTTP err %s", err)
-		return err
-	}
-
-	log.Printf("resp: %s", resp)
-
-	exErr := &apiError{Arg: body}
-	if e := json.Unmarshal(resp, exErr); e != nil {
-		log.Printf("unmarshal api err %s", e)
-		return e
-	}
-
-	if exErr.ErrCode != "" {
-		log.Printf("apiError %s", exErr)
-		return exErr
-	}
-
-	if e := json.Unmarshal(resp, obj); e != nil {
-		log.Printf("unmarshal user err %s", e)
-		return e
-	}
-
-	return nil
 }

@@ -17,7 +17,6 @@ const (
 
 var (
 	corpId, corpSecret string
-	holder             *client.TokenHolder
 )
 
 func init() {
@@ -26,23 +25,21 @@ func init() {
 	if corpId == "" || corpSecret == "" {
 		panic("EXWECHAT_CORP_ID or EXWECHAT_CORP_SECRET are empty or not found")
 	}
-	holder = client.NewTokenHolder(urlToken)
-	holder.SetClient(corpId, corpSecret)
 }
 
 type API struct {
-	c  *client.Client
-	th *client.TokenHolder
+	c *client.Client
 }
 
 func NewAPI() *API {
-	c := client.NewClient()
+	c := client.NewClient(urlToken)
 	c.SetContentType("application/json")
-	return &API{c, holder}
+	c.SetCorp(corpId, corpSecret)
+	return &API{c}
 }
 
 func (a *API) GetUser(userId string) (*User, error) {
-	token, err := a.th.GetAuthToken()
+	token, err := a.c.GetAuthToken()
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +59,7 @@ func (a *API) GetUser(userId string) (*User, error) {
 
 func (a *API) AddUser(user *User) (err error) {
 	var token string
-	token, err = a.th.GetAuthToken()
+	token, err = a.c.GetAuthToken()
 	if err != nil {
 		return
 	}
@@ -80,7 +77,7 @@ func (a *API) AddUser(user *User) (err error) {
 
 func (a *API) DeleteUser(userId string) (err error) {
 	var token string
-	token, err = a.th.GetAuthToken()
+	token, err = a.c.GetAuthToken()
 	if err != nil {
 		return
 	}
