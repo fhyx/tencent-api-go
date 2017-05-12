@@ -3,6 +3,7 @@ package exwechat
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/wealthworks/go-tencent-api/client"
@@ -30,7 +31,7 @@ type API struct {
 
 func NewAPI() *API {
 	if corpId == "" || corpSecret == "" {
-		panic("EXWECHAT_CORP_ID or EXWECHAT_CORP_SECRET are empty or not found")
+		log.Fatal("EXWECHAT_CORP_ID or EXWECHAT_CORP_SECRET are empty or not found")
 	}
 	c := client.NewClient(urlToken)
 	c.SetContentType("application/json")
