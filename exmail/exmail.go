@@ -62,15 +62,19 @@ type loginUrl struct {
 	ExpiresIn int64  `json:"expires_in,omitempty"`
 }
 
-func GetLoginURL(alias string) (string, error) {
+func GetLoginURL(alias string) (s string, err error) {
 	obj := &loginUrl{}
 	u := fmt.Sprintf("%s?userid=%s", urlGetLogin, alias)
-	err := ApiLogin().c.GetJSON(u, obj)
+	err = ApiLogin().c.GetJSON(u, obj)
 	if err != nil {
+		log.Print(err)
 		return "", err
 	}
+	debug("GetLoginURL %s", u)
 
-	return obj.LoginUrl, nil
+	s = obj.LoginUrl
+
+	return
 	// return fmt.Sprintf(urlLogin, agent, alias, ticket), nil
 }
 
@@ -79,19 +83,23 @@ type newCount struct {
 	NewCount json.Number `json:"count,omitempty"`
 }
 
-func CountNewMail(alias string) (int, error) {
+func CountNewMail(alias string) (c int, err error) {
 	obj := &newCount{}
 
-	err := ApiCheck().c.GetJSON(urlNewCount+"?userid="+alias, obj)
+	u := fmt.Sprintf("%s?userid=%s", urlNewCount, alias)
+	err = ApiCheck().c.GetJSON(u, obj)
 	if err != nil {
 		return 0, err
 	}
+	debug("CountNewMail %s", u)
 
 	count, err := obj.NewCount.Int64()
 	if err != nil {
 		log.Print(err)
 	}
-	return int(count), nil
+
+	c = count
+	return
 }
 
 func GetUser(alias string) (*User, error) {
