@@ -25,10 +25,10 @@ type UserAttributes struct {
 
 // User 为企业用户信息
 type User struct {
-	UserID        string         `json:"userid"`
+	UID           string         `json:"userid"`
 	Name          string         `json:"name,omitempty"`
 	EnglishName   string         `json:"english_name,omitempty"`
-	DepartmentIds []int64        `json:"department,omitempty"`
+	DepartmentIds []int          `json:"department,omitempty"`
 	Title         string         `json:"position,omitempty"`
 	Mobile        string         `json:"mobile,omitempty"`
 	Email         string         `json:"email,omitempty"`
@@ -37,4 +37,10 @@ type User struct {
 	Avatar        string         `json:"avatar,omitempty"`
 	ExtAttr       UserAttributes `json:"extattr,omitempty"`
 	client.Error
+}
+
+type usersResponse struct {
+	client.Error
+
+	Users []User `json:"userlist"`
 }

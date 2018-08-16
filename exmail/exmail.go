@@ -98,7 +98,7 @@ func CountNewMail(alias string) (c int, err error) {
 		log.Print(err)
 	}
 
-	c = count
+	c = int(count)
 	return
 }
 
