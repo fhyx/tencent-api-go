@@ -136,7 +136,11 @@ func (c *Client) GetJSON(uri string, obj interface{}) error {
 	if err != nil {
 		return err
 	}
-	return parseResult(body, obj)
+	err = parseResult(body, obj)
+	if err != nil {
+		log.Printf("GetJSON(uri %s) ERR %s", uri, err)
+	}
+	return err
 }
 
 func (c *Client) PostJSON(uri string, data []byte, obj interface{}) error {
@@ -144,7 +148,11 @@ func (c *Client) PostJSON(uri string, data []byte, obj interface{}) error {
 	if err != nil {
 		return err
 	}
-	return parseResult(body, obj)
+	err = parseResult(body, obj)
+	if err != nil {
+		log.Printf("PostJSON(uri %s, %d bytes) ERR %s", uri, len(data), err)
+	}
+	return err
 }
 
 func parseResult(resp []byte, obj interface{}) error {

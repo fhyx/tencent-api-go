@@ -15,31 +15,44 @@ const (
 	urlAddUser = "https://qyapi.weixin.qq.com/cgi-bin/user/create"
 	urlDelUser = "https://qyapi.weixin.qq.com/cgi-bin/user/delete"
 
-	urlListDept = "https://qyapi.weixin.qq.com/cgi-bin/department/list"
-	urlListUser = "https://qyapi.weixin.qq.com/cgi-bin/user/simplelist"
+	urlListDept       = "https://qyapi.weixin.qq.com/cgi-bin/department/list"
+	urlSimpleListUser = "https://qyapi.weixin.qq.com/cgi-bin/user/simplelist"
+	urlListUser       = "https://qyapi.weixin.qq.com/cgi-bin/user/list"
+
+	urlOAuth2GetUser = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo"
 )
 
-var (
-	corpId, corpSecret string
-)
-
-func init() {
-	corpId = os.Getenv("EXWECHAT_CORP_ID")
-	corpSecret = os.Getenv("EXWECHAT_CORP_SECRET")
-}
+// func init() {
+// 	corpId = os.Getenv("EXWECHAT_CORP_ID")
+// 	corpSecret = os.Getenv("EXWECHAT_CORP_SECRET")
+// }
 
 type API struct {
-	c *client.Client
+	corpId     string
+	corpSecret string
+	c          *client.Client
 }
 
 func NewAPI() *API {
-	if corpId == "" || corpSecret == "" {
-		log.Fatal("EXWECHAT_CORP_ID or EXWECHAT_CORP_SECRET are empty or not found")
+	return New(os.Getenv("EXWECHAT_CORP_ID"), os.Getenv("EXWECHAT_CORP_SECRET"))
+}
+
+func New(corpId, corpSecret string) *API {
+	if corpId == "" || corpId == "" {
+		log.Fatal("corpId or corpSecret are empty or not found")
 	}
 	c := client.NewClient(urlToken)
 	c.SetContentType("application/json")
 	c.SetCorp(corpId, corpSecret)
-	return &API{c}
+	return &API{
+		corpId:     corpId,
+		corpSecret: corpSecret,
+		c:          c,
+	}
+}
+
+func (a *API) CorpID() string {
+	return a.corpId
 }
 
 func (a *API) GetUser(userId string) (*User, error) {
@@ -50,15 +63,12 @@ func (a *API) GetUser(userId string) (*User, error) {
 
 	uri := fmt.Sprintf("%s?access_token=%s&userid=%s", urlGetUser, token, userId)
 
-	body, err := a.c.Get(uri)
+	user := new(User)
+	err = a.c.GetJSON(uri, user)
 	if err != nil {
 		return nil, err
 	}
-
-	user := &User{}
-	err = json.Unmarshal(body, user)
-
-	return user, err
+	return user, nil
 }
 
 func (a *API) AddUser(user *User) (err error) {
@@ -101,14 +111,8 @@ func (a *API) ListDepartment(id int) (data []Department, err error) {
 
 	uri := fmt.Sprintf("%s?access_token=%s&id=%d", urlListDept, token, id)
 
-	var body []byte
-	body, err = a.c.Get(uri)
-	if err != nil {
-		return nil, err
-	}
-
 	var ret departmentResponse
-	err = json.Unmarshal(body, &ret)
+	err = a.c.GetJSON(uri, &ret)
 
 	if err == nil {
 		data = ret.Department
@@ -130,18 +134,27 @@ func (a *API) ListUser(deptId int, incChild bool) (data []User, err error) {
 	}
 	uri := fmt.Sprintf("%s?access_token=%s&department_id=%d&fetch_child=%s", urlListUser, token, deptId, fc)
 
-	var body []byte
-	body, err = a.c.Get(uri)
-	if err != nil {
-		return nil, err
-	}
-
 	var ret usersResponse
-	err = json.Unmarshal(body, &ret)
+	err = a.c.GetJSON(uri, &ret)
 
 	if err == nil {
 		data = ret.Users
 	}
+
+	return
+}
+
+func (a *API) GetOAuth2User(agentID int64, code string) (ou *OAuth2UserInfo, err error) {
+	var token string
+	token, err = a.c.GetAuthToken()
+	if err != nil {
+		return
+	}
+
+	uri := fmt.Sprintf("%s?access_token=%s&agentid=%d&code=%s", urlOAuth2GetUser, token, agentID, code)
+
+	ou = new(OAuth2UserInfo)
+	err = a.c.GetJSON(uri, ou)
 
 	return
 }
