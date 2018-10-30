@@ -10,8 +10,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-
-	. "github.com/tj/go-debug"
 )
 
 type Client struct {
@@ -26,7 +24,6 @@ var (
 		TLSClientConfig:    &tls.Config{InsecureSkipVerify: true},
 		DisableCompression: true,
 	}
-	debug = Debug("ex:client")
 )
 
 func NewClient(urlToken string) *Client {
@@ -106,6 +103,7 @@ func doRequest(client *http.Client, req *http.Request) ([]byte, error) {
 		log.Printf("read body ERR %s", e)
 		return nil, e
 	}
+	debug("resp.Body: %s", rbody)
 
 	return rbody, nil
 

@@ -144,7 +144,7 @@ func (a *API) ListUser(deptId int, incChild bool) (data []User, err error) {
 	return
 }
 
-func (a *API) GetOAuth2User(agentID int64, code string) (ou *OAuth2UserInfo, err error) {
+func (a *API) GetOAuth2User(agentID int, code string) (ou *OAuth2UserInfo, err error) {
 	var token string
 	token, err = a.c.GetAuthToken()
 	if err != nil {

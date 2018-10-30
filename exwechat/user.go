@@ -1,6 +1,8 @@
 package exwechat
 
 import (
+	"fmt"
+
 	"github.com/wealthworks/go-tencent-api/client"
 	"github.com/wealthworks/go-tencent-api/gender"
 )
@@ -9,17 +11,17 @@ type Status uint8
 
 const (
 	SNone     Status = 0
-	SEnabled  Status = 1
-	SDisabled Status = 2
+	SActived  Status = 1
+	SInactive Status = 2
 	SUnlit    Status = 4
 )
 
 func (s Status) String() string {
 	switch s {
-	case SEnabled:
-		return "enabled"
-	case SDisabled:
-		return "disabled"
+	case SActived:
+		return "actived"
+	case SInactive:
+		return "inactive"
 	case SUnlit:
 		return "unlit"
 	case SNone:
@@ -52,11 +54,20 @@ type User struct {
 	Email         string         `json:"email,omitempty"`
 	Tel           string         `json:"telephone,omitempty"`
 	Gender        gender.Gender  `json:"gender,omitempty"`
-	Status        Status         `json:"enable,omitempty"`
+	Status        Status         `json:"status,omitempty"`
+	Enabled       int8           `json:"enable,emitempty"`
 	Avatar        string         `json:"avatar,omitempty"`
 	IsLeader      uint8          `json:"isleader,omitempty"`
 	ExtAttr       UserAttributes `json:"extattr,omitempty"`
 	client.Error
+}
+
+func (u User) IsActived() bool {
+	return u.Status == SActived
+}
+
+func (u User) IsEnabled() bool {
+	return u.Enabled == 1
 }
 
 type usersResponse struct {
