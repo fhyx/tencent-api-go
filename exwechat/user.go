@@ -1,8 +1,8 @@
 package exwechat
 
 import (
-	"fhyx/platform/go-tencent-api/client"
-	"fhyx/platform/go-tencent-api/gender"
+	"github.com/wealthworks/go-tencent-api/client"
+	"github.com/wealthworks/go-tencent-api/gender"
 )
 
 type Status uint8

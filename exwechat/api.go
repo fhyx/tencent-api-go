@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"fhyx/platform/go-tencent-api/client"
+	"github.com/wealthworks/go-tencent-api/client"
 )
 
 const (

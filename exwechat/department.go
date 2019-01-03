@@ -3,7 +3,7 @@ package exwechat
 import (
 	"errors"
 
-	"fhyx/platform/go-tencent-api/client"
+	"github.com/wealthworks/go-tencent-api/client"
 )
 
 var (
