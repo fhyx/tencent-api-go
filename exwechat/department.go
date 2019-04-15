@@ -1,13 +1,7 @@
 package exwechat
 
 import (
-	"errors"
-
 	"github.com/wealthworks/go-tencent-api/client"
-)
-
-var (
-	ErrNotFound = errors.New("not found")
 )
 
 // 部门

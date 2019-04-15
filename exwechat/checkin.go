@@ -3,11 +3,12 @@ package exwechat
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"time"
 )
 
-var (
+const (
 	urlCheckinData = "https://qyapi.weixin.qq.com/cgi-bin/checkin/getcheckindata"
 )
 
@@ -39,22 +40,36 @@ type CheckInData struct {
 }
 
 type CAPI struct {
-	*API
+	api *API
 }
 
 func NewCAPI() *CAPI {
-	return &CAPI{API: New(os.Getenv("EXWECHAT_CORP_ID"), os.Getenv("EXWECHAT_CHECKIN_SECRET"))}
+	api := New(os.Getenv("EXWECHAT_CORP_ID"), os.Getenv("EXWECHAT_CHECKIN_SECRET"))
+	return &CAPI{api}
 }
 
-func (a *CAPI) GetCheckInData(userIDs []string, startTime int64) (result *CheckInResult, err error) {
+func (a *CAPI) ListCheckin(days int, userIDs ...string) (result *CheckInResult, err error) {
+	if len(userIDs) == 0 {
+		err = ErrEmptyArg
+		return
+	}
 	result = new(CheckInResult)
 	var token string
-	token, err = a.c.GetAuthToken()
+	token, err = a.api.c.GetAuthToken()
 	if err != nil {
 		return nil, err
 	}
+	if days == 0 {
+		days = 7
+	}
+	if days > 30 {
+		err = ErrOutofRange
+		return
+	}
 
-	endTime := time.Unix(startTime, 0).AddDate(0, 1, 0).Unix()
+	startTime := time.Now().Add(0 - time.Hour*24*time.Duration(days)).Unix()
+	endTime := startTime + int64(time.Hour*24*7/time.Second)
+	log.Printf("start %v, end %v", startTime, endTime)
 	req := CheckInReq{
 		OpenCheckInDataType: 3,
 		StartTime:           startTime,
@@ -68,6 +83,6 @@ func (a *CAPI) GetCheckInData(userIDs []string, startTime int64) (result *CheckI
 	}
 
 	uri := fmt.Sprintf("%s?access_token=%s", urlCheckinData, token)
-	err = a.c.PostJSON(uri, data, result)
+	err = a.api.c.PostJSON(uri, data, result)
 	return
 }

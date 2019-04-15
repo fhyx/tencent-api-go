@@ -39,7 +39,7 @@ func NewAPI() *API {
 
 func New(corpId, corpSecret string) *API {
 	if corpId == "" || corpId == "" {
-		log.Fatal("corpId or corpSecret are empty or not found")
+		log.Printf("corpId or corpSecret are empty or not found")
 	}
 	c := client.NewClient(urlToken)
 	c.SetContentType("application/json")
