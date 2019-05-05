@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	. "github.com/tj/go-debug"
+	. "github.com/wealthworks/go-debug"
 
 	"github.com/wealthworks/go-tencent-api/client"
 )
