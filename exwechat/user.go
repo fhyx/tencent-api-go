@@ -56,7 +56,11 @@ type User struct {
 	Enabled       int8           `json:"enable,emitempty"`
 	Avatar        string         `json:"avatar,omitempty"`
 	IsLeader      uint8          `json:"isleader,omitempty"`
+	LeaderDepts   []int          `json:"is_leader_in_dept,omitempty"`
 	ExtAttr       UserAttributes `json:"extattr,omitempty"`
+
+	ExternalPosition string `json:"external_position,omitempty"`
+
 	client.Error
 }
 
