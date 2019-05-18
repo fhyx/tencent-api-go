@@ -102,7 +102,7 @@ func (a *API) DeleteUser(userId string) (err error) {
 	return
 }
 
-func (a *API) ListDepartment(id int) (data []Department, err error) {
+func (a *API) ListDepartment(id int) (data Departments, err error) {
 	var token string
 	token, err = a.c.GetAuthToken()
 	if err != nil {
@@ -115,7 +115,7 @@ func (a *API) ListDepartment(id int) (data []Department, err error) {
 	err = a.c.GetJSON(uri, &ret)
 
 	if err == nil {
-		data = ret.Department
+		data = ret.Departments
 	}
 
 	return

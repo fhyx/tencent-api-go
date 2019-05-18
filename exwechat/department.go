@@ -12,12 +12,24 @@ type Department struct {
 	Order    int    `json:"order"`    // 在父部门中的次序值。order值大的排序靠前。有效的值范围是[0, 2^32)
 }
 
+type Departments []Department
+
+func (z Departments) WithID(id int) *Department {
+	for _, dept := range z {
+		if dept.Id == id {
+			return &dept
+		}
+	}
+	return nil
+}
+
 type departmentResponse struct {
 	client.Error
 
-	Department []Department `json:"department"`
+	Departments `json:"department"`
 }
 
+// FilterDepartment Deprecated with Departments.WithID()
 func FilterDepartment(data []Department, id int) (*Department, error) {
 	for _, dept := range data {
 		if dept.Id == id {
