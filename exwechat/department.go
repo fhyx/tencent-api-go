@@ -23,6 +23,14 @@ func (z Departments) WithID(id int) *Department {
 	return nil
 }
 
+// default sort
+func (z Departments) Len() int      { return len(z) }
+func (z Departments) Swap(i, j int) { z[i], z[j] = z[j], z[i] }
+func (z Departments) Less(i, j int) bool {
+	return z[i].ParentId == 0 || z[i].ParentId < z[j].ParentId ||
+		z[i].ParentId == z[j].ParentId && z[i].Order > z[j].Order
+}
+
 type departmentResponse struct {
 	client.Error
 
