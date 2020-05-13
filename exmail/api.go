@@ -8,7 +8,7 @@ import (
 
 	. "github.com/wealthworks/go-debug"
 
-	"github.com/wealthworks/go-tencent-api/client"
+	"github.com/fhyx/go-tencent-api/client"
 )
 
 var (

@@ -1,7 +1,7 @@
 package exwechat
 
 import (
-	"github.com/wealthworks/go-tencent-api/client"
+	"github.com/fhyx/go-tencent-api/client"
 )
 
 // 部门
