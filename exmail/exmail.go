@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/wealthworks/go-tencent-api/client"
-	"github.com/wealthworks/go-tencent-api/gender"
+	"github.com/fhyx/go-tencent-api/client"
+	"github.com/fhyx/go-tencent-api/gender"
 )
 
 const (

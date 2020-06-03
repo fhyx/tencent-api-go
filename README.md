@@ -17,7 +17,7 @@ Put Auth string as variable `EXMAIL_API_AUTHS` in Environment
 - `exmail.CountNewMail(alias string) (int, error)`
 
 
-## ExWechat: 用于企业版微信
+## wxwork: 用于企业版微信
 
 https://work.weixin.qq.com/api/doc
 
