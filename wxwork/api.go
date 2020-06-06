@@ -1,4 +1,4 @@
-package exwechat
+package wxwork
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/fhyx/go-tencent-api/client"
+	"fhyx.online/tencent-api-go/client"
 )
 
 const (

@@ -1,4 +1,4 @@
-package exwechat
+package wxwork
 
 import dbg "github.com/wealthworks/go-debug"
 

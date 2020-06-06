@@ -1,7 +1,7 @@
-package exwechat
+package wxwork
 
 import (
-	"github.com/fhyx/go-tencent-api/client"
+	"fhyx.online/tencent-api-go/client"
 )
 
 // 部门

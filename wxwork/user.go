@@ -1,8 +1,8 @@
-package exwechat
+package wxwork
 
 import (
-	"github.com/fhyx/go-tencent-api/client"
-	"github.com/fhyx/go-tencent-api/gender"
+	"fhyx.online/tencent-api-go/client"
+	"fhyx.online/tencent-api-go/gender"
 )
 
 type Status uint8
