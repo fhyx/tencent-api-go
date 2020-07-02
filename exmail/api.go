@@ -2,11 +2,8 @@ package exmail
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
-
-	. "github.com/wealthworks/go-debug"
 
 	"fhyx.online/tencent-api-go/client"
 )
@@ -17,8 +14,6 @@ var (
 	apiContact *API
 	apiLogin   *API
 	apiCheck   *API
-
-	debug = Debug("exmail")
 )
 
 func init() {
@@ -33,15 +28,15 @@ type API struct {
 // apps: Contact, Login, Check
 func New(apiCat string) *API {
 	if corpId == "" {
-		log.Fatal("EXMAIL_CORP_ID is empty or not found")
+		logger().Fatalw("EXMAIL_CORP_ID is empty or not found")
 	}
 	if apiCat == "" {
-		log.Print("empty apiCat")
+		logger().Warnw("empty apiCat")
 	}
 	k := fmt.Sprintf("EXMAIL_API_%s_SECRET", strings.ToUpper(apiCat))
 	corpSecret := os.Getenv(k)
 	if corpSecret == "" {
-		log.Fatal(fmt.Sprintf("%s are empty or not found", k))
+		logger().Fatalw("corp secret empty or not found", "key", k)
 	}
 	c := client.NewClient(urlToken)
 	c.SetContentType("application/json")

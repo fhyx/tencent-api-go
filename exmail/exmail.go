@@ -50,7 +50,7 @@ type User struct {
 	Tel        string        `json:"tel,omitempty"`
 	Mobile     string        `json:"mobile,omitempty"`
 	Slaves     []string      `json:"slaves"` // email aliases
-	department []int         `json:"department,omitempty"`
+	Department []int         `json:"department,omitempty"`
 	Enable     uint8         `json:"enable,omitempty"`
 	// OpenType   OpenType      `json:"OpenType"`
 	// TODO: PartyList
@@ -70,7 +70,7 @@ func GetLoginURL(alias string) (s string, err error) {
 		log.Print(err)
 		return "", err
 	}
-	debug("GetLoginURL %s", u)
+	logger().Debugw("GetLoginURL", "url", u)
 
 	s = obj.LoginUrl
 
@@ -91,7 +91,7 @@ func CountNewMail(alias string) (c int, err error) {
 	if err != nil {
 		return 0, err
 	}
-	debug("CountNewMail %s", u)
+	logger().Debugw("CountNewMail %s", u)
 
 	count, err := obj.NewCount.Int64()
 	if err != nil {

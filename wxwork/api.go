@@ -3,7 +3,6 @@ package wxwork
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 
 	"fhyx.online/tencent-api-go/client"
@@ -22,37 +21,39 @@ const (
 	urlOAuth2GetUser = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo"
 )
 
-// func init() {
-// 	corpId = os.Getenv("EXWECHAT_CORP_ID")
-// 	corpSecret = os.Getenv("EXWECHAT_CORP_SECRET")
-// }
-
+// API ...
 type API struct {
-	corpId     string
+	corpID     string
 	corpSecret string
 	c          *client.Client
 }
 
-func NewAPI() *API {
-	return New(os.Getenv("EXWECHAT_CORP_ID"), os.Getenv("EXWECHAT_CORP_SECRET"))
-}
-
-func New(corpId, corpSecret string) *API {
-	if corpId == "" || corpId == "" {
-		log.Printf("corpId or corpSecret are empty or not found")
+func NewAPI(strs ...string) *API {
+	corpID := os.Getenv("WXWORK_CORP_ID")
+	corpSecret := os.Getenv("WXWORK_CORP_SECRET")
+	if len(strs) > 0 && len(strs[0]) > 0 {
+		corpID = strs[0]
+		if len(strs) > 1 && len(strs[1]) > 0 {
+			corpSecret = strs[1]
+		}
 	}
+
+	if corpID == "" || corpSecret == "" {
+		logger().Infow("corpID or corpSecret are empty or not found")
+	}
+
 	c := client.NewClient(urlToken)
 	c.SetContentType("application/json")
-	c.SetCorp(corpId, corpSecret)
+	c.SetCorp(corpID, corpSecret)
 	return &API{
-		corpId:     corpId,
+		corpID:     corpID,
 		corpSecret: corpSecret,
 		c:          c,
 	}
 }
 
 func (a *API) CorpID() string {
-	return a.corpId
+	return a.corpID
 }
 
 func (a *API) GetUser(userId string) (*User, error) {

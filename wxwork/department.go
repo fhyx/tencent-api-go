@@ -4,7 +4,7 @@ import (
 	"fhyx.online/tencent-api-go/client"
 )
 
-// 部门
+// Department 部门
 type Department struct {
 	Id       int    `json:"id"`       // 部门id，32位整型，指定时必须大于1。若不填该参数，将自动生成id
 	Name     string `json:"name"`     // 部门名称。长度限制为1~32个字符

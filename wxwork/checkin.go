@@ -44,7 +44,7 @@ type CAPI struct {
 }
 
 func NewCAPI() *CAPI {
-	api := New(os.Getenv("EXWECHAT_CORP_ID"), os.Getenv("EXWECHAT_CHECKIN_SECRET"))
+	api := NewAPI(os.Getenv("EXWECHAT_CORP_ID"), os.Getenv("EXWECHAT_CHECKIN_SECRET"))
 	return &CAPI{api}
 }
 
