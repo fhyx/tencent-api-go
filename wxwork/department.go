@@ -46,3 +46,5 @@ func FilterDepartment(data []Department, id int) (*Department, error) {
 	}
 	return nil, ErrNotFound
 }
+
+type DepartmentUp = Department

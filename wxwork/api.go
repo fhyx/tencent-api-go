@@ -21,6 +21,10 @@ const (
 	urlOAuth2GetUser = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo"
 )
 
+var (
+	_ IClient = (*API)(nil)
+)
+
 // API ...
 type API struct {
 	corpID     string
@@ -122,18 +126,22 @@ func (a *API) ListDepartment(id int) (data Departments, err error) {
 	return
 }
 
-func (a *API) ListUser(deptId int, incChild bool) (data []User, err error) {
+func (a *API) ListUser(lr ListReq) (data Users, err error) {
 	var token string
 	token, err = a.c.GetAuthToken()
 	if err != nil {
 		return
 	}
 
+	var prefix = urlListUser
+	if lr.IsSimple {
+		prefix = urlSimpleListUser
+	}
 	fc := "0"
-	if incChild {
+	if lr.IncChild {
 		fc = "1"
 	}
-	uri := fmt.Sprintf("%s?access_token=%s&department_id=%d&fetch_child=%s", urlListUser, token, deptId, fc)
+	uri := fmt.Sprintf("%s?access_token=%s&department_id=%d&fetch_child=%s", prefix, token, lr.DeptID, fc)
 
 	var ret usersResponse
 	err = a.c.GetJSON(uri, &ret)
