@@ -19,6 +19,7 @@ const (
 	urlListUser       = "https://qyapi.weixin.qq.com/cgi-bin/user/list"
 
 	urlOAuth2GetUser = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo"
+	uriCountActivity = "https://qyapi.weixin.qq.com/cgi-bin/user/get_active_stat"
 )
 
 var (
@@ -107,14 +108,14 @@ func (a *API) DeleteUser(userId string) (err error) {
 	return
 }
 
-func (a *API) ListDepartment(id int) (data Departments, err error) {
+func (a *API) ListDepartment(id string) (data Departments, err error) {
 	var token string
 	token, err = a.c.GetAuthToken()
 	if err != nil {
 		return
 	}
 
-	uri := fmt.Sprintf("%s?access_token=%s&id=%d", urlListDept, token, id)
+	uri := fmt.Sprintf("%s?access_token=%s&id=%s", urlListDept, token, id)
 
 	var ret departmentResponse
 	err = a.c.GetJSON(uri, &ret)
@@ -126,11 +127,11 @@ func (a *API) ListDepartment(id int) (data Departments, err error) {
 	return
 }
 
-func (a *API) ListUser(lr ListReq) (data Users, err error) {
-	var token string
-	token, err = a.c.GetAuthToken()
+// ListUser ...
+func (a *API) ListUser(lr ListReq) (ListResult, error) {
+	token, err := a.c.GetAuthToken()
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	var prefix = urlListUser
@@ -141,16 +142,16 @@ func (a *API) ListUser(lr ListReq) (data Users, err error) {
 	if lr.IncChild {
 		fc = "1"
 	}
-	uri := fmt.Sprintf("%s?access_token=%s&department_id=%d&fetch_child=%s", prefix, token, lr.DeptID, fc)
+	uri := fmt.Sprintf("%s?access_token=%s&department_id=%s&fetch_child=%s", prefix, token, lr.DeptID, fc)
 
 	var ret usersResponse
 	err = a.c.GetJSON(uri, &ret)
-
-	if err == nil {
-		data = ret.Users
+	if err != nil {
+		logger().Infow("getJSON fail", "uri", uri, "lr", lr, "err", err)
+		return nil, err
 	}
 
-	return
+	return &ret, nil
 }
 
 func (a *API) GetOAuth2User(agentID int, code string) (ou *OAuth2UserInfo, err error) {
@@ -165,5 +166,38 @@ func (a *API) GetOAuth2User(agentID int, code string) (ou *OAuth2UserInfo, err e
 	ou = new(OAuth2UserInfo)
 	err = a.c.GetJSON(uri, ou)
 
+	return
+}
+
+type activeStatReq struct {
+	Date string `json:"date"`
+}
+
+type activeStatRes struct {
+	client.Error
+	ActiveCount int `json:"active_cnt"`
+}
+
+// CountActivity ...
+func (a *API) CountActivity(date string) (count int, err error) {
+	var token string
+	token, err = a.c.GetAuthToken()
+	if err != nil {
+		return
+	}
+	var data []byte
+	data, err = json.Marshal(&activeStatReq{Date: date})
+	if err != nil {
+		return
+	}
+	uri := fmt.Sprintf("%s?access_token=%s", uriCountActivity, token)
+	var res activeStatRes
+	err = a.c.PostJSON(uri, data, &res)
+	if err != nil {
+		logger().Infow("count activite fail", "date", date, "err", err)
+		return
+	}
+
+	count = res.ActiveCount
 	return
 }

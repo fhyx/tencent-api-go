@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -60,12 +59,13 @@ func (th *TokenHolder) Valid() bool {
 
 func (th *TokenHolder) GetAuthToken() (token string, err error) {
 	if !th.Valid() {
-		debug("token is nil or expired, refreshing it")
+		logger().Infow("token is nil or expired, refreshing it")
 		th.currToken, err = th.requestToken()
 		if err != nil {
+			logger().Infow("GetAuthToken fail", "err", err)
 			return "", err
 		}
-		// log.Print("got token", th.currToken)
+		logger().Infow("GetAuthToken ok", "token", th.currToken)
 		th.expiresAt = time.Now().Unix() + th.currToken.ExpiresIn
 	}
 	token = th.currToken.AccessToken
@@ -74,27 +74,35 @@ func (th *TokenHolder) GetAuthToken() (token string, err error) {
 
 func (th *TokenHolder) requestToken() (token *Token, err error) {
 	var resp []byte
+	var uri string
 	if th.apiAuths != "" { // for ExMail Old API
-		body_str := "grant_type=client_credentials"
-		resp, err = DoHTTP("POST", th.base, th.apiAuths, bytes.NewBufferString(body_str))
+		bodyStr := "grant_type=client_credentials"
+		uri = th.base
+		resp, err = DoHTTP("POST", uri, th.apiAuths, bytes.NewBufferString(bodyStr))
 	} else if th.corpId != "" && th.corpSecret != "" { // for ExWechat and ExMail
-		uri := fmt.Sprintf("%s?corpid=%s&corpsecret=%s", th.base, th.corpId, th.corpSecret)
+		uri = fmt.Sprintf("%s?corpid=%s&corpsecret=%s", th.base, th.corpId, th.corpSecret)
 		resp, err = DoHTTP("GET", uri, "", nil)
 	} else {
 		err = errEmptyAuths
 	}
 
 	if err != nil {
-		log.Printf(" err %s", err)
+		logger().Infow("doHTTP fail", "err", err)
 		return
 	}
 
 	obj := &Token{}
 	err = json.Unmarshal(resp, obj)
 	if err != nil {
-		log.Printf("unmarshal err %s", err)
+		logger().Infow("json.unmarshal fail", "err", err)
 		return
 	}
+	if obj.ErrCode != 0 {
+		err = &obj.Error
+		logger().Infow("request token fail", "uri", uri, "err", err)
+		return
+	}
+
 	token = obj
 
 	return

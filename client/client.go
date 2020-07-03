@@ -60,7 +60,7 @@ func (c *Client) Do(method, uri string, body io.Reader) ([]byte, error) {
 	u.RawQuery = q.Encode()
 	uri = u.String()
 
-	debug("Do(%s, %s)", method, uri)
+	logger().Debugw("client.do", "method", method, "uri", uri)
 	req, e := http.NewRequest(method, uri, body)
 	if e != nil {
 		log.Println(e, method, uri)
@@ -88,22 +88,22 @@ func (c *Client) request(req *http.Request) ([]byte, error) {
 func doRequest(client *http.Client, req *http.Request) ([]byte, error) {
 	resp, e := client.Do(req)
 	if e != nil {
-		log.Printf("client %s %s ERR %s", req.Method, req.RequestURI, e)
+		logger().Infow("client.do fail", "method", req.Method, "uri", req.RequestURI, "err", e)
 		return nil, e
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 300 || resp.StatusCode < 200 {
-		log.Printf("http code error %d, %s", resp.StatusCode, resp.Status)
+		logger().Infow("http fail", "code", resp.StatusCode, "status", resp.Status)
 		return nil, fmt.Errorf("Expecting HTTP status code 20x, but got %v", resp.StatusCode)
 	}
 
 	rbody, e := ioutil.ReadAll(resp.Body)
 	if e != nil {
-		log.Printf("read body ERR %s", e)
+		logger().Infow("resp read fail", "err", e)
 		return nil, e
 	}
-	debug("resp.Body: %s", rbody)
+	logger().Debugw("resp read", "body", string(rbody))
 
 	return rbody, nil
 
@@ -148,7 +148,7 @@ func (c *Client) PostJSON(uri string, data []byte, obj interface{}) error {
 	}
 	err = parseResult(body, obj)
 	if err != nil {
-		log.Printf("PostJSON(uri %s, %d bytes) ERR %s", uri, len(data), err)
+		logger().Infow("PostJSON fail", "uri", uri, "data", len(data), "err", err)
 	}
 	return err
 }

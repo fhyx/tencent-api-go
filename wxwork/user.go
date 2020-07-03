@@ -109,7 +109,11 @@ type UserUp = User
 type usersResponse struct {
 	client.Error
 
-	Users Users `json:"userlist"`
+	UserList Users `json:"userlist"`
+}
+
+func (ur *usersResponse) Users() Users {
+	return ur.UserList
 }
 
 // OAuth2UserInfo 为用户 OAuth2 验证登录后的简单信息
