@@ -39,16 +39,18 @@ type CheckInData struct {
 	Mediaids       []string `json:"mediaids,omitempty"`
 }
 
-type CAPI struct {
+type CheckinAPI struct {
 	api *API
 }
 
-func NewCAPI() *CAPI {
+type CAPI = CheckinAPI // deprecated
+
+func NewCheckinAPI() *CheckinAPI {
 	api := NewAPI(os.Getenv("EXWECHAT_CORP_ID"), os.Getenv("EXWECHAT_CHECKIN_SECRET"))
-	return &CAPI{api}
+	return &CheckinAPI{api}
 }
 
-func (a *CAPI) ListCheckin(days int, userIDs ...string) (result *CheckInResult, err error) {
+func (a *CheckinAPI) ListCheckin(days int, userIDs ...string) (result *CheckInResult, err error) {
 	if len(userIDs) == 0 {
 		err = ErrEmptyArg
 		return

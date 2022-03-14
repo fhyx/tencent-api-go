@@ -82,7 +82,7 @@ type User struct {
 	Tel           string         `json:"telephone,omitempty"`
 	Gender        gender.Gender  `json:"gender,omitempty"`
 	Status        Status         `json:"status,omitempty"`
-	Enabled       int8           `json:"enable,emitempty"`
+	Enabled       int8           `json:"enable,omitempty"`
 	Avatar        string         `json:"avatar,omitempty"`
 	IsLeader      uint8          `json:"isleader,omitempty"`
 	LeaderDepts   []int          `json:"is_leader_in_dept,omitempty"`
