@@ -10,11 +10,10 @@ import (
 )
 
 const (
-	urlToken     = "https://api.exmail.qq.com/cgi-bin/gettoken"
-	urlGetLogin  = "https://api.exmail.qq.com/cgi-bin/service/get_login_url"
-	urlUserGet   = "https://api.exmail.qq.com/cgi-bin/user/get"
-	urlNewCount  = "https://api.exmail.qq.com/cgi-bin/mail/newcount"
-	urlPartyList = "https://api.exmail.qq.com/cgi-bin/department/list"
+	urlToken    = "https://api.exmail.qq.com/cgi-bin/gettoken"
+	urlGetLogin = "https://api.exmail.qq.com/cgi-bin/service/get_login_url"
+	urlUserGet  = "https://api.exmail.qq.com/cgi-bin/user/get"
+	urlNewCount = "https://api.exmail.qq.com/cgi-bin/mail/newcount"
 )
 
 type OpenType uint8

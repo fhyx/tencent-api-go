@@ -8,18 +8,8 @@ import (
 	"fhyx.online/tencent-api-go/client"
 )
 
-const (
-	urlToken   = "https://qyapi.weixin.qq.com/cgi-bin/gettoken"
-	urlGetUser = "https://qyapi.weixin.qq.com/cgi-bin/user/get"
-	urlAddUser = "https://qyapi.weixin.qq.com/cgi-bin/user/create"
-	urlDelUser = "https://qyapi.weixin.qq.com/cgi-bin/user/delete"
-
-	urlListDept       = "https://qyapi.weixin.qq.com/cgi-bin/department/list"
-	urlSimpleListUser = "https://qyapi.weixin.qq.com/cgi-bin/user/simplelist"
-	urlListUser       = "https://qyapi.weixin.qq.com/cgi-bin/user/list"
-
-	urlOAuth2GetUser = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo"
-	uriCountActivity = "https://qyapi.weixin.qq.com/cgi-bin/user/get_active_stat"
+var (
+	UriPrefix = "https://qyapi.weixin.qq.com/cgi-bin"
 )
 
 var (
@@ -47,7 +37,7 @@ func NewAPI(strs ...string) *API {
 		logger().Infow("corpID or corpSecret are empty or not found")
 	}
 
-	c := client.NewClient(urlToken)
+	c := client.NewClient(UriPrefix + "/gettoken")
 	c.SetContentType("application/json")
 	c.SetCorp(corpID, corpSecret)
 	return &API{
@@ -62,15 +52,8 @@ func (a *API) CorpID() string {
 }
 
 func (a *API) GetUser(userId string) (*User, error) {
-	token, err := a.c.GetAuthToken()
-	if err != nil {
-		return nil, err
-	}
-
-	uri := fmt.Sprintf("%s?access_token=%s&userid=%s", urlGetUser, token, userId)
-
 	user := new(User)
-	err = a.c.GetJSON(uri, user)
+	err := a.c.GetJSON(UriPrefix+"/user/get", user)
 	if err != nil {
 		return nil, err
 	}
@@ -78,47 +61,24 @@ func (a *API) GetUser(userId string) (*User, error) {
 }
 
 func (a *API) AddUser(user *User) (err error) {
-	var token string
-	token, err = a.c.GetAuthToken()
-	if err != nil {
-		return
-	}
-
-	uri := fmt.Sprintf("%s?access_token=%s", urlAddUser, token)
 	var data []byte
 	data, err = json.Marshal(user)
 	if err != nil {
 		return
 	}
 
-	_, err = a.c.Post(uri, data)
+	_, err = a.c.Post(UriPrefix+"/user/create", data)
 	return
 }
 
 func (a *API) DeleteUser(userId string) (err error) {
-	var token string
-	token, err = a.c.GetAuthToken()
-	if err != nil {
-		return
-	}
-
-	uri := fmt.Sprintf("%s?access_token=%s&userid=%s", urlDelUser, token, userId)
-
-	_, err = a.c.Get(uri)
+	_, err = a.c.Get(UriPrefix + "/user/delete")
 	return
 }
 
 func (a *API) ListDepartment(id string) (data Departments, err error) {
-	var token string
-	token, err = a.c.GetAuthToken()
-	if err != nil {
-		return
-	}
-
-	uri := fmt.Sprintf("%s?access_token=%s&id=%s", urlListDept, token, id)
-
 	var ret departmentResponse
-	err = a.c.GetJSON(uri, &ret)
+	err = a.c.GetJSON(UriPrefix+"/department/list?id="+id, &ret)
 
 	if err == nil {
 		data = ret.Departments
@@ -129,23 +89,18 @@ func (a *API) ListDepartment(id string) (data Departments, err error) {
 
 // ListUser ...
 func (a *API) ListUser(lr ListReq) (ListResult, error) {
-	token, err := a.c.GetAuthToken()
-	if err != nil {
-		return nil, err
-	}
-
-	var prefix = urlListUser
+	var prefix = UriPrefix + "/user/list"
 	if lr.IsSimple {
-		prefix = urlSimpleListUser
+		prefix = UriPrefix + "/user/simplelist"
 	}
 	fc := "0"
 	if lr.IncChild {
 		fc = "1"
 	}
-	uri := fmt.Sprintf("%s?access_token=%s&department_id=%s&fetch_child=%s", prefix, token, lr.DeptID, fc)
+	uri := fmt.Sprintf("%s?department_id=%s&fetch_child=%s", prefix, lr.DeptID, fc)
 
 	var ret usersResponse
-	err = a.c.GetJSON(uri, &ret)
+	err := a.c.GetJSON(uri, &ret)
 	if err != nil {
 		logger().Infow("getJSON fail", "uri", uri, "lr", lr, "err", err)
 		return nil, err
@@ -154,14 +109,8 @@ func (a *API) ListUser(lr ListReq) (ListResult, error) {
 	return &ret, nil
 }
 
-func (a *API) GetOAuth2User(agentID int, code string) (ou *OAuth2UserInfo, err error) {
-	var token string
-	token, err = a.c.GetAuthToken()
-	if err != nil {
-		return
-	}
-
-	uri := fmt.Sprintf("%s?access_token=%s&agentid=%d&code=%s", urlOAuth2GetUser, token, agentID, code)
+func (a *API) GetOAuth2User(code string) (ou *OAuth2UserInfo, err error) {
+	uri := fmt.Sprintf("%s/user/getuserinfo?code=%s", UriPrefix, code)
 
 	ou = new(OAuth2UserInfo)
 	err = a.c.GetJSON(uri, ou)
@@ -180,19 +129,14 @@ type activeStatRes struct {
 
 // CountActivity ...
 func (a *API) CountActivity(date string) (count int, err error) {
-	var token string
-	token, err = a.c.GetAuthToken()
-	if err != nil {
-		return
-	}
 	var data []byte
 	data, err = json.Marshal(&activeStatReq{Date: date})
 	if err != nil {
 		return
 	}
-	uri := fmt.Sprintf("%s?access_token=%s", uriCountActivity, token)
+
 	var res activeStatRes
-	err = a.c.PostJSON(uri, data, &res)
+	err = a.c.PostJSON(UriPrefix+"/user/get_active_stat", data, &res)
 	if err != nil {
 		logger().Infow("count activite fail", "date", date, "err", err)
 		return
@@ -200,4 +144,17 @@ func (a *API) CountActivity(date string) (count int, err error) {
 
 	count = res.ActiveCount
 	return
+}
+
+type IPListResult struct {
+	IPList []string `json:"ip_list"`
+}
+
+func (a *API) GetCallbackIP() ([]string, error) {
+	var res IPListResult
+	err := a.c.GetJSON(UriPrefix+"/getcallbackip", &res)
+	if err != nil {
+		return nil, err
+	}
+	return res.IPList, nil
 }

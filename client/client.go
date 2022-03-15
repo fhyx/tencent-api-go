@@ -81,10 +81,6 @@ func (c *Client) Do(method, uri string, body io.Reader) ([]byte, error) {
 	return doRequest(c.httpClient, req)
 }
 
-func (c *Client) request(req *http.Request) ([]byte, error) {
-	return doRequest(c.httpClient, req)
-}
-
 func doRequest(client *http.Client, req *http.Request) ([]byte, error) {
 	resp, e := client.Do(req)
 	if e != nil {
