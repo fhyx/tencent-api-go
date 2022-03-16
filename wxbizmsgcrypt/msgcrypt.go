@@ -214,7 +214,7 @@ func (self *WXBizMsgCrypt) calSignature(timestamp, nonce, data string) string {
 
 	sha := sha1.New()
 	sha.Write(buffer.Bytes())
-	signature := fmt.Sprintf("%x", sha.Sum(nil))
+	signature := fmt.Sprintf("%02x", sha.Sum(nil))
 	return string(signature)
 }
 
@@ -245,6 +245,9 @@ func (self *WXBizMsgCrypt) VerifyURL(msg_signature, timestamp, nonce, echostr st
 	signature := self.calSignature(timestamp, nonce, echostr)
 
 	if strings.Compare(signature, msg_signature) != 0 {
+		logger().Infow("mismatch", "signature", signature, "msg_signature", msg_signature,
+			"token", self.token, "enckey", self.encoding_aeskey, "appid", self.receiver_id,
+		)
 		return nil, NewCryptError(ValidateSignatureError, "signature not equal")
 	}
 

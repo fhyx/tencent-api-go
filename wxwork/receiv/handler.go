@@ -11,6 +11,16 @@ import (
 	"fhyx.online/tencent-api-go/wxwork/webhook"
 )
 
+type Config struct {
+	AppID       string
+	Token       string
+	EncodingKey string
+
+	NotifyURI string
+
+	MsgHandler MessageHandler
+}
+
 type MessageHandler interface {
 	OnReceived(ctx context.Context, msg interface{})
 }
@@ -28,13 +38,15 @@ type server struct {
 
 var _ http.Handler = (*server)(nil)
 
-func NewHandler(token, encKey string, appid, notifyUri string, mh MessageHandler) Receiver {
+func NewHandler(cfg Config) Receiver {
 	s := &server{
-		cpt: wxbizmsgcrypt.NewWXBizMsgCrypt(token, encKey, appid, wxbizmsgcrypt.XmlType),
-		mh:  mh,
+		cpt: wxbizmsgcrypt.NewWXBizMsgCrypt(
+			cfg.Token, cfg.EncodingKey,
+			cfg.AppID, wxbizmsgcrypt.XmlType),
+		mh: cfg.MsgHandler,
 	}
-	if len(notifyUri) > 0 {
-		s.nh = webhook.NewClient(notifyUri)
+	if len(cfg.NotifyURI) > 0 {
+		s.nh = webhook.NewClient(cfg.NotifyURI)
 	}
 	return s
 }
@@ -47,10 +59,11 @@ func (s *server) echoTestHandler(rw http.ResponseWriter, req *http.Request) {
 	msgSign := req.URL.Query().Get("msg_signature")
 	timestamp := req.URL.Query().Get("timestamp")
 	nonce := req.URL.Query().Get("nonce")
-	echoStr := req.URL.Query().Get("echoStr")
+	echoStr := req.URL.Query().Get("echostr")
 	text, cryptErr := s.cpt.VerifyURL(msgSign, timestamp, nonce, echoStr)
 	if cryptErr != nil {
-		logger().Infow("VerifyURL fail", "err", cryptErr)
+		logger().Infow("verifyURL fail", "err", cryptErr,
+			"timestamp", timestamp, "nonce", nonce, "echoStr", echoStr)
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -68,25 +81,38 @@ func (s *server) eventHandler(rw http.ResponseWriter, req *http.Request) {
 	decrypted, cryptErr := s.cpt.DecryptMsg(msgSign, timestamp, nonce, body)
 	if nil != cryptErr {
 		logger().Infow("decrypt fail", "err", cryptErr)
-		s.notifyText("decrypt fail: " + cryptErr.Error())
+		s.notifyText("error: decrypt fail: " + cryptErr.Error())
 		return
 	}
 
 	m, err := s.parseMsg(decrypted)
 	if err != nil {
-		s.notifyText("parseMsg fail: " + err.Error())
+		s.notifyText("error: parseMsg fail: " + err.Error())
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if s.mh != nil {
 		s.mh.OnReceived(req.Context(), m)
 	}
+	s.notifyMsg(m)
 
 }
 
 func (s *server) notifyText(msg string) {
 	if s.nh != nil {
 		_ = s.nh.Notify(webhook.NewTextMessage(msg))
+	}
+}
+
+func (s *server) notifyMsg(m interface{}) {
+	if s.nh != nil {
+		if v, ok := m.(fmt.Stringer); ok {
+			text := v.String()
+			if id, ok := m.(IDGetter); ok {
+				text += " id=" + id.GetID()
+			}
+			s.notifyText("got msg: " + text)
+		}
 	}
 }
 
@@ -106,10 +132,10 @@ func (s *server) parseMsg(body []byte) (interface{}, error) {
 		return &x, err
 		// TODO: more types
 	case MessageTypeEvent:
-		s.notifyText(fmt.Sprintf("got msg event: %s, change: %s", msg.Event, msg.ChangeType))
-		return s.parseEvent(msg.Event, body)
+		// s.notifyText(fmt.Sprintf("got msg event: %s, change: %s", msg.Event, msg.ChangeType))
+		return s.parseEvent(msg.EvnType, body)
 	default:
-		return nil, fmt.Errorf("unknown event '%s'", msg.Event)
+		return nil, fmt.Errorf("unknown event '%s'", msg.EvnType)
 	}
 
 }

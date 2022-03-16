@@ -4,20 +4,26 @@ type Message struct {
 	// 消息类型 text/markdown/image/news
 	MsgType string `json:"msgtype"`
 
-	// 内容 text/markdown
-	Content string `json:"content,omitempty"`
-
 	// userid的列表
 	MentionedList []string `json:"mentioned_list,omitempty"`
 
 	// 手机号列表
 	MentionedMobileList []string `json:"mentioned_mobile_list,omitempty"`
 
+	Text *MessageContent `json:"text,omitempty"`
+
+	Markdown *MessageContent `json:"markdown,omitempty"`
+
 	// Image
 	Image *MessageImage `json:"image,omitempty"`
 
 	// Articles
-	Articles []MessageArticle `json:"articles"` // 图文消息，一个图文消息支持1到8条图文
+	Articles []MessageArticle `json:"articles,omitempty"` // 图文消息，一个图文消息支持1到8条图文
+}
+
+// MessageContent 内容 text/markdown
+type MessageContent struct {
+	Content string `json:"content,omitempty"`
 }
 
 // MessageImage 图片
@@ -37,14 +43,14 @@ type MessageArticle struct {
 func NewTextMessage(content string) *Message {
 	return &Message{
 		MsgType: "text",
-		Content: content,
+		Text:    &MessageContent{content},
 	}
 }
 
 func NewMarkdownMessage(content string) *Message {
 	return &Message{
-		MsgType: "markdown",
-		Content: content,
+		MsgType:  "markdown",
+		Markdown: &MessageContent{content},
 	}
 }
 

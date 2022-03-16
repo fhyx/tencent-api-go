@@ -2,6 +2,7 @@ package receiv
 
 import (
 	"encoding/xml"
+	"fmt"
 )
 
 type Event struct {
@@ -10,12 +11,20 @@ type Event struct {
 	FromUserName string      `xml:"FromUserName"` // 此事件该值固定为sys，表示该消息由系统生成
 	CreateTime   int64       `xml:"CreateTime"`   // 消息创建时间 （整型）
 	MsgType      MessageType `xml:"MsgType"`      // 消息的类型，此时固定为event
-	Event        EventType   `xml:"Event"`
+	EvnType      EventType   `xml:"Event"`
+}
+
+func (e *Event) String() string {
+	return fmt.Sprintf("%s %s", e.MsgType, e.EvnType)
 }
 
 type EventChangeContact struct {
 	Event
 	ChangeType ChangeType `xml:"ChangeType"`
+}
+
+func (e *EventChangeContact) String() string {
+	return fmt.Sprintf("%s %s %s", e.MsgType, e.EvnType, e.ChangeType)
 }
 
 type eventChangeContactUser struct {
@@ -107,6 +116,10 @@ type EventChangeContactCreateUser struct {
 	ExtAttr eventChangeContactExtAttr `xml:"ExtAttr"`
 }
 
+func (e *EventChangeContactCreateUser) GetID() string {
+	return e.UserID
+}
+
 /*
 <xml>
 	<ToUserName><![CDATA[toUser]]></ToUserName>
@@ -160,6 +173,10 @@ type EventChangeContactUpdateUser struct {
 	ExtAttr eventChangeContactExtAttr `xml:"ExtAttr"`
 }
 
+func (e *EventChangeContactUpdateUser) GetID() string {
+	return e.UserID
+}
+
 /*
 <xml>
 	<ToUserName><![CDATA[toUser]]></ToUserName>
@@ -174,6 +191,10 @@ type EventChangeContactUpdateUser struct {
 type EventChangeContactDeleteUser struct {
 	EventChangeContact
 	UserID string `xml:"UserID"`
+}
+
+func (e *EventChangeContactDeleteUser) GetID() string {
+	return e.UserID
 }
 
 /*

@@ -24,7 +24,7 @@ type Message struct {
 	// AgentID 企业应用的 id，整型。可在应用的设置页面查看
 	AgentID int64 `xml:"AgentID"`
 	// Event 事件类型 MsgType 为 event
-	Event EventType `xml:"Event"`
+	EvnType EventType `xml:"Event"`
 	// ChangeType 变更类型 Event 为 change_contact 等的值：
 	// create_user,update_user,delete_user,
 	// create_party,update_party,delete_party,
@@ -67,4 +67,8 @@ type MessageLink struct {
 	Title       string
 	Description string
 	Url         string
+}
+
+type IDGetter interface {
+	GetID() string
 }
