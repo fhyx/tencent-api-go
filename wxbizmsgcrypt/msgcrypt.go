@@ -40,8 +40,12 @@ const (
 )
 
 type CryptError struct {
-	ErrCode int
-	ErrMsg  string
+	ErrCode int    `json:"code"`
+	ErrMsg  string `json:"msg"`
+}
+
+func (ce *CryptError) Error() string {
+	return fmt.Sprintf("cryptErr: %d, %s", ce.ErrCode, ce.ErrMsg)
 }
 
 func NewCryptError(err_code int, err_msg string) *CryptError {

@@ -1,30 +1,46 @@
 package receiv
 
 import (
+	"context"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 
 	"fhyx.online/tencent-api-go/wxbizmsgcrypt"
+	"fhyx.online/tencent-api-go/wxwork/webhook"
 )
 
 type MessageHandler interface {
-	OnReceived(msg interface{})
+	OnReceived(ctx context.Context, msg interface{})
+}
+
+type Receiver interface {
+	http.Handler
+	SetMessageHandler(mh MessageHandler)
 }
 
 type server struct {
 	cpt *wxbizmsgcrypt.WXBizMsgCrypt
 	mh  MessageHandler
+	nh  webhook.Notifier
 }
 
 var _ http.Handler = (*server)(nil)
 
-func NewHandler(token, encKey string, appid string, mh MessageHandler) http.Handler {
-	return &server{
+func NewHandler(token, encKey string, appid, notifyUri string, mh MessageHandler) Receiver {
+	s := &server{
 		cpt: wxbizmsgcrypt.NewWXBizMsgCrypt(token, encKey, appid, wxbizmsgcrypt.XmlType),
 		mh:  mh,
 	}
+	if len(notifyUri) > 0 {
+		s.nh = webhook.NewClient(notifyUri)
+	}
+	return s
+}
+
+func (s *server) SetMessageHandler(mh MessageHandler) {
+	s.mh = mh
 }
 
 func (s *server) echoTestHandler(rw http.ResponseWriter, req *http.Request) {
@@ -52,35 +68,48 @@ func (s *server) eventHandler(rw http.ResponseWriter, req *http.Request) {
 	decrypted, cryptErr := s.cpt.DecryptMsg(msgSign, timestamp, nonce, body)
 	if nil != cryptErr {
 		logger().Infow("decrypt fail", "err", cryptErr)
+		s.notifyText("decrypt fail: " + cryptErr.Error())
+		return
 	}
 
 	m, err := s.parseMsg(decrypted)
 	if err != nil {
+		s.notifyText("parseMsg fail: " + err.Error())
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	s.mh.OnReceived(m)
+	if s.mh != nil {
+		s.mh.OnReceived(req.Context(), m)
+	}
+
+}
+
+func (s *server) notifyText(msg string) {
+	if s.nh != nil {
+		_ = s.nh.Notify(webhook.NewTextMessage(msg))
+	}
 }
 
 func (s *server) parseMsg(body []byte) (interface{}, error) {
-	var msgBase Message
-	err := xml.Unmarshal(body, &msgBase)
+	msg := new(Message)
+	err := xml.Unmarshal(body, msg)
 	if nil != err {
 		logger().Infow("Unmarshal fail", "err", err)
 	} else {
-		logger().Infow("Unmarshal ok", "msg", &msgBase)
+		logger().Infow("Unmarshal ok", "msg", msg)
 	}
 
-	switch msgBase.MsgType {
+	switch msg.MsgType {
 	case MessageTypeText:
 		var x MessageText
 		err = xml.Unmarshal(body, &x)
 		return &x, err
 		// TODO: more types
 	case MessageTypeEvent:
-		return s.parseEvent(msgBase.Event, body)
+		s.notifyText(fmt.Sprintf("got msg event: %s, change: %s", msg.Event, msg.ChangeType))
+		return s.parseEvent(msg.Event, body)
 	default:
-		return nil, fmt.Errorf("unknown event '%s'", msgBase.Event)
+		return nil, fmt.Errorf("unknown event '%s'", msg.Event)
 	}
 
 }
