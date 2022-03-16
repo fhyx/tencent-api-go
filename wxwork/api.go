@@ -53,7 +53,7 @@ func (a *API) CorpID() string {
 
 func (a *API) GetUser(userId string) (*User, error) {
 	user := new(User)
-	err := a.c.GetJSON(UriPrefix+"/user/get", user)
+	err := a.c.GetJSON(UriPrefix+"/user/get?userid="+userId, user)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (a *API) AddUser(user *User) (err error) {
 }
 
 func (a *API) DeleteUser(userId string) (err error) {
-	_, err = a.c.Get(UriPrefix + "/user/delete")
+	_, err = a.c.Get(UriPrefix + "/user/delete?userid=" + userId)
 	return
 }
 
