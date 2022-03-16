@@ -46,21 +46,21 @@ type eventChangeContactUser struct {
 }
 
 type eventChangeContactExtAttr struct {
-	Text string `xml:",chardata"`
-	Item []struct {
-		Chardata string `xml:",chardata"`
-		Name     string `xml:"Name"`
-		Type     string `xml:"Type"`
+	Text  string `xml:",chardata" json:"-"`
+	Attrs []struct {
+		Chardata string `xml:",chardata" json:"-"`
+		Name     string `xml:"Name" json:"name,omitempty"`
+		Type     string `xml:"Type" json:"type,omitempty"`
 		Text     struct {
-			Text  string `xml:",chardata"`
-			Value string `xml:"Value"`
-		} `xml:"Text"`
+			Text  string `xml:",chardata" json:"-"`
+			Value string `xml:"Value" json:"value,omitempty"`
+		} `xml:"Text" json:"text"`
 		Web struct {
-			Text  string `xml:",chardata"`
-			Title string `xml:"Title"`
-			URL   string `xml:"Url"`
-		} `xml:"Web"`
-	} `xml:"Item"`
+			Text  string `xml:",chardata" json:"-"`
+			Title string `xml:"Title" json:"title,omitempty"`
+			URL   string `xml:"Url" json:"url,omitempty"`
+		} `xml:"Web" json:"web"`
+	} `xml:"Item" json:"attrs,omitempty"`
 }
 
 /*
@@ -113,7 +113,7 @@ type EventChangeContactCreateUser struct {
 
 	eventChangeContactUser
 
-	ExtAttr eventChangeContactExtAttr `xml:"ExtAttr"`
+	ExtAttr eventChangeContactExtAttr `xml:"ExtAttr" json:"extAttr"`
 }
 
 func (e *EventChangeContactCreateUser) GetID() string {
