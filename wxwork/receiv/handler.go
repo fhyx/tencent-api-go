@@ -120,9 +120,9 @@ func (s *server) parseMsg(body []byte) (interface{}, error) {
 	msg := new(Message)
 	err := xml.Unmarshal(body, msg)
 	if nil != err {
-		logger().Infow("Unmarshal fail", "err", err)
+		logger().Infow("Unmarshal fail", "body", string(body), "err", err)
 	} else {
-		logger().Infow("Unmarshal ok", "msg", msg)
+		logger().Infow("Unmarshal ok", "body", string(body), "msg", msg)
 	}
 
 	switch msg.MsgType {
