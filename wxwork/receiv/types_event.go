@@ -6,16 +6,52 @@ import (
 
 type Event struct {
 	XMLName      xml.Name    `xml:"xml"`
-	ToUserName   string      `xml:"ToUserName"`
-	FromUserName string      `xml:"FromUserName"`
-	CreateTime   int64       `xml:"CreateTime"`
-	MsgType      MessageType `xml:"MsgType"`
+	ToUserName   string      `xml:"ToUserName"`   // 企业微信CorpID
+	FromUserName string      `xml:"FromUserName"` // 此事件该值固定为sys，表示该消息由系统生成
+	CreateTime   int64       `xml:"CreateTime"`   // 消息创建时间 （整型）
+	MsgType      MessageType `xml:"MsgType"`      // 消息的类型，此时固定为event
 	Event        EventType   `xml:"Event"`
 }
 
 type EventChangeContact struct {
 	Event
 	ChangeType ChangeType `xml:"ChangeType"`
+}
+
+type eventChangeContactUser struct {
+	Name           string `xml:"Name"`
+	Department     string `xml:"Department"`     // 1,2,3
+	MainDepartment int32  `xml:"MainDepartment"` // 主部门
+	IsLeaderInDept string `xml:"IsLeaderInDept"` // 1,0,0 是否为部门负责人，0-否，1-是，顺序与Department字段的部门逐一对
+	DirectLeader   string `xml:"DirectLeader"`   // 直属上级UserID，最多5个，逗号分隔
+	Position       string `xml:"Position"`
+	Mobile         string `xml:"Mobile"`
+	Gender         int8   `xml:"Gender"`  // 性别，1表示男性，2表示女性
+	Email          string `xml:"Email"`   // 邮箱
+	BizMail        string `xml:"BizMail"` // 企业邮箱
+	Status         int32  `xml:"Status"`  // 激活状态：1=已激活 2=已禁用 4=未激活 已激活代表已激活企业微信或已关注微信插件（原企业号）5=成员退出
+	Avatar         string `xml:"Avatar"`  // 头像url。注：如果要获取小图将url最后的”/0”改成”/100”即可。
+	Alias          string `xml:"Alias"`
+	Telephone      string `xml:"Telephone"`
+	Address        string `xml:"Address"`
+}
+
+type eventChangeContactExtAttr struct {
+	Text string `xml:",chardata"`
+	Item []struct {
+		Chardata string `xml:",chardata"`
+		Name     string `xml:"Name"`
+		Type     string `xml:"Type"`
+		Text     struct {
+			Text  string `xml:",chardata"`
+			Value string `xml:"Value"`
+		} `xml:"Text"`
+		Web struct {
+			Text  string `xml:",chardata"`
+			Title string `xml:"Title"`
+			URL   string `xml:"Url"`
+		} `xml:"Web"`
+	} `xml:"Item"`
 }
 
 /*
@@ -63,36 +99,12 @@ type EventChangeContact struct {
 */
 type EventChangeContactCreateUser struct {
 	EventChangeContact
-	UserID         string `xml:"UserID"`
-	Name           string `xml:"Name"`
-	Department     string `xml:"Department"`
-	IsLeaderInDept string `xml:"IsLeaderInDept"`
-	Position       string `xml:"Position"`
-	Mobile         string `xml:"Mobile"`
-	Gender         int8   `xml:"Gender"`
-	Email          string `xml:"Email"`
-	Status         int32  `xml:"Status"`
-	Avatar         string `xml:"Avatar"`
-	Alias          string `xml:"Alias"`
-	Telephone      string `xml:"Telephone"`
-	Address        string `xml:"Address"`
-	ExtAttr        struct {
-		Text string `xml:",chardata"`
-		Item []struct {
-			Chardata string `xml:",chardata"`
-			Name     string `xml:"Name"`
-			Type     string `xml:"Type"`
-			Text     struct {
-				Text  string `xml:",chardata"`
-				Value string `xml:"Value"`
-			} `xml:"Text"`
-			Web struct {
-				Text  string `xml:",chardata"`
-				Title string `xml:"Title"`
-				URL   string `xml:"Url"`
-			} `xml:"Web"`
-		} `xml:"Item"`
-	} `xml:"ExtAttr"`
+
+	UserID string `xml:"UserID"` // 成员UserID
+
+	eventChangeContactUser
+
+	ExtAttr eventChangeContactExtAttr `xml:"ExtAttr"`
 }
 
 /*
@@ -139,37 +151,13 @@ type EventChangeContactCreateUser struct {
 */
 type EventChangeContactUpdateUser struct {
 	EventChangeContact
-	UserID         string `xml:"UserID"`
-	NewUserID      string `xml:"NewUserID"`
-	Name           string `xml:"Name"`
-	Department     string `xml:"Department"`
-	IsLeaderInDept string `xml:"IsLeaderInDept"`
-	Position       string `xml:"Position"`
-	Mobile         string `xml:"Mobile"`
-	Gender         int8   `xml:"Gender"`
-	Email          string `xml:"Email"`
-	Status         int32  `xml:"Status"`
-	Avatar         string `xml:"Avatar"`
-	Alias          string `xml:"Alias"`
-	Telephone      string `xml:"Telephone"`
-	Address        string `xml:"Address"`
-	ExtAttr        struct {
-		Text string `xml:",chardata"`
-		Item []struct {
-			Chardata string `xml:",chardata"`
-			Name     string `xml:"Name"`
-			Type     string `xml:"Type"`
-			Text     struct {
-				Text  string `xml:",chardata"`
-				Value string `xml:"Value"`
-			} `xml:"Text"`
-			Web struct {
-				Text  string `xml:",chardata"`
-				Title string `xml:"Title"`
-				URL   string `xml:"Url"`
-			} `xml:"Web"`
-		} `xml:"Item"`
-	} `xml:"ExtAttr"`
+
+	UserID    string `xml:"UserID"`    // 变更信息的成员UserID
+	NewUserID string `xml:"NewUserID"` // 新的UserID，变更时推送（userid由系统生成时可更改一次）
+
+	eventChangeContactUser
+
+	ExtAttr eventChangeContactExtAttr `xml:"ExtAttr"`
 }
 
 /*
