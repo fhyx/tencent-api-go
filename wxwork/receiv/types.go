@@ -72,3 +72,7 @@ type MessageLink struct {
 type IDGetter interface {
 	GetID() string
 }
+
+type NameGetter interface {
+	GetName() string
+}

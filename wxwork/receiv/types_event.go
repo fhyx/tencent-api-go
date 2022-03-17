@@ -120,6 +120,10 @@ func (e *EventChangeContactCreateUser) GetID() string {
 	return e.UserID
 }
 
+func (e *EventChangeContactCreateUser) GetName() string {
+	return e.Name
+}
+
 /*
 <xml>
 	<ToUserName><![CDATA[toUser]]></ToUserName>
@@ -174,7 +178,14 @@ type EventChangeContactUpdateUser struct {
 }
 
 func (e *EventChangeContactUpdateUser) GetID() string {
+	if len(e.NewUserID) > 0 {
+		return e.UserID + "|" + e.NewUserID
+	}
 	return e.UserID
+}
+
+func (e *EventChangeContactUpdateUser) GetName() string {
+	return e.Name
 }
 
 /*
@@ -223,6 +234,10 @@ func (e *EventChangeContactCreateParty) GetID() string {
 	return e.ID
 }
 
+func (e *EventChangeContactCreateParty) GetName() string {
+	return e.Name
+}
+
 /*
 <xml>
     <ToUserName><![CDATA[toUser]]></ToUserName>
@@ -246,6 +261,10 @@ type EventChangeContactUpdateParty struct {
 
 func (e *EventChangeContactUpdateParty) GetID() string {
 	return e.ID
+}
+
+func (e *EventChangeContactUpdateParty) GetName() string {
+	return e.Name
 }
 
 /*
