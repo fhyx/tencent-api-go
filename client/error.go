@@ -1,14 +1,7 @@
 package client
 
 import (
-	"fmt"
+	"fhyx.online/tencent-api-go/models"
 )
 
-type Error struct {
-	ErrCode int    `json:"errcode,omitempty"`
-	ErrMsg  string `json:"errmsg,omitempty"`
-}
-
-func (e *Error) Error() string {
-	return fmt.Sprintf("errcode: %d, errmsg: %s", e.ErrCode, e.ErrMsg)
-}
+type Error = models.Error

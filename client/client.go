@@ -163,7 +163,7 @@ func parseResult(resp []byte, obj interface{}) error {
 	}
 
 	if e := json.Unmarshal(resp, obj); e != nil {
-		log.Printf("unmarshal user err %s", e)
+		log.Printf("unmarshal obj err %s", e)
 		return e
 	}
 
