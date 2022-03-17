@@ -219,6 +219,10 @@ type EventChangeContactCreateParty struct {
 	Order    int32  `xml:"Order"`
 }
 
+func (e *EventChangeContactCreateParty) GetID() string {
+	return e.ID
+}
+
 /*
 <xml>
     <ToUserName><![CDATA[toUser]]></ToUserName>
@@ -240,6 +244,10 @@ type EventChangeContactUpdateParty struct {
 	// Order    int32  `xml:"Order"`
 }
 
+func (e *EventChangeContactUpdateParty) GetID() string {
+	return e.ID
+}
+
 /*
 <xml>
     <ToUserName><![CDATA[toUser]]></ToUserName>
@@ -254,6 +262,10 @@ type EventChangeContactUpdateParty struct {
 type EventChangeContactDeleteParty struct {
 	EventChangeContact
 	ID string `xml:"Id"`
+}
+
+func (e *EventChangeContactDeleteParty) GetID() string {
+	return e.ID
 }
 
 /*
