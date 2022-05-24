@@ -8,6 +8,14 @@ type EventSysApprovalChange struct {
 	ApprovalInfo OAApprovalInfo `xml:"ApprovalInfo"`
 }
 
+func (esac *EventSysApprovalChange) GetID() string {
+	return esac.ApprovalInfo.SpNo
+}
+
+func (esac *EventSysApprovalChange) GetName() string {
+	return esac.ApprovalInfo.SpName
+}
+
 // OAApprovalInfo 审批申请状态变化回调通知
 type OAApprovalInfo struct {
 	// SpNo 审批编号
