@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"fhyx.online/tencent-api-go/client"
+	"daxv.cn/gopak/tencent-api-go/client"
 )
 
 var (
@@ -18,11 +18,13 @@ var (
 
 // API ...
 type API struct {
+	c *client.Client
+
 	corpID     string
 	corpSecret string
-	c          *client.Client
 }
 
+// return new API instance from corpID, corpSecret
 func NewAPI(strs ...string) *API {
 	corpID := os.Getenv("WXWORK_CORP_ID")
 	corpSecret := os.Getenv("WXWORK_CORP_SECRET")

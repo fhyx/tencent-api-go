@@ -149,6 +149,14 @@ func (c *Client) PostJSON(uri string, data []byte, obj interface{}) error {
 	return err
 }
 
+func MustMarshal(obj any) []byte {
+	data, err := json.Marshal(obj)
+	if err != nil {
+		logger().Fatalw("marshal fail", "obj", obj, "err", err)
+	}
+	return data
+}
+
 func parseResult(resp []byte, obj interface{}) error {
 	// log.Printf("parse result: %s", string(resp))
 	exErr := &Error{}

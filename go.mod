@@ -1,3 +1,3 @@
-module fhyx.online/tencent-api-go
+module daxv.cn/gopak/tencent-api-go
 
-go 1.16
+go 1.18

@@ -1,7 +1,7 @@
 package models
 
 import (
-	"fhyx.online/tencent-api-go/gender"
+	"daxv.cn/gopak/tencent-api-go/gender"
 )
 
 type Status uint8
