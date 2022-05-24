@@ -3,6 +3,11 @@ package receiv
 import (
 	"encoding/xml"
 	"fmt"
+	"time"
+)
+
+const (
+	eventLayout = "0102_15:04:05"
 )
 
 type Event struct {
@@ -11,11 +16,13 @@ type Event struct {
 	FromUserName string      `xml:"FromUserName"` // 此事件该值固定为sys，表示该消息由系统生成
 	CreateTime   int64       `xml:"CreateTime"`   // 消息创建时间 （整型）
 	MsgType      MessageType `xml:"MsgType"`      // 消息的类型，此时固定为event
-	EvnType      EventType   `xml:"Event"`
+	EvnType      EventType   `xml:"Event"`        // 事件类型
+	AgentID      int32       `xml:"AgentID"`      // 企业应用的id，整型。可在应用的设置页面查看
 }
 
 func (e *Event) String() string {
-	return fmt.Sprintf("%s %s", e.MsgType, e.EvnType)
+	now := time.Unix(e.CreateTime, 0)
+	return fmt.Sprintf("%s %s %s %d", now.Format(eventLayout), e.MsgType, e.EvnType, e.AgentID)
 }
 
 type EventChangeContact struct {
