@@ -14,6 +14,9 @@ type ListResult interface {
 
 // IClient ... interface of API client
 type IClient interface {
+	GetUser(userId string) (*User, error)
+	AddUser(user *User) (err error)
+	DeleteUser(userId string) (err error)
 	CountActivity(date string) (int, error)
 	ListDepartment(id string) (data Departments, err error)
 	ListUser(r ListReq) (res ListResult, err error)

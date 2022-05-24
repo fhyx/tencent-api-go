@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"fhyx.online/tencent-api-go/wxbizmsgcrypt"
-	"fhyx.online/tencent-api-go/wxwork/webhook"
+	"daxv.cn/gopak/tencent-api-go/wxbizmsgcrypt"
+	"daxv.cn/gopak/tencent-api-go/wxwork/webhook"
 )
 
 type Config struct {
@@ -183,6 +183,13 @@ func (s *server) parseEvent(et EventType, body []byte) (interface{}, error) {
 		default:
 			return nil, fmt.Errorf("unknown event change contact '%s'", ec.ChangeType)
 		}
+	case EventTypeSysApprovalChange:
+		var ev EventSysApprovalChange
+		err := xml.Unmarshal(body, &ev)
+		if err != nil {
+			return nil, err
+		}
+		return &ev, nil
 	default:
 		return nil, fmt.Errorf("unknown event type '%s", et)
 	}

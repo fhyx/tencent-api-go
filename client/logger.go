@@ -1,7 +1,7 @@
 package client
 
 import (
-	"fhyx.online/tencent-api-go/log"
+	"daxv.cn/gopak/tencent-api-go/log"
 )
 
 func logger() log.Logger {

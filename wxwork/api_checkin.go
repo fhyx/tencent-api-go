@@ -1,15 +1,9 @@
 package wxwork
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
-	"os"
 	"time"
-)
 
-const (
-	urlCheckinData = "https://qyapi.weixin.qq.com/cgi-bin/checkin/getcheckindata"
+	"daxv.cn/gopak/tencent-api-go/client"
 )
 
 type CheckInReq struct {
@@ -39,28 +33,13 @@ type CheckInData struct {
 	Mediaids       []string `json:"mediaids,omitempty"`
 }
 
-type CheckinAPI struct {
-	api *API
-}
-
-type CAPI = CheckinAPI // deprecated
-
-func NewCheckinAPI() *CheckinAPI {
-	api := NewAPI(os.Getenv("EXWECHAT_CORP_ID"), os.Getenv("EXWECHAT_CHECKIN_SECRET"))
-	return &CheckinAPI{api}
-}
-
-func (a *CheckinAPI) ListCheckin(days int, userIDs ...string) (result *CheckInResult, err error) {
+func (a *API) ListCheckin(days int, userIDs ...string) (result *CheckInResult, err error) {
 	if len(userIDs) == 0 {
 		err = ErrEmptyArg
 		return
 	}
 	result = new(CheckInResult)
-	var token string
-	token, err = a.api.c.GetAuthToken()
-	if err != nil {
-		return nil, err
-	}
+
 	if days == 0 {
 		days = 7
 	}
@@ -71,20 +50,13 @@ func (a *CheckinAPI) ListCheckin(days int, userIDs ...string) (result *CheckInRe
 
 	startTime := time.Now().Add(0 - time.Hour*24*time.Duration(days)).Unix()
 	endTime := startTime + int64(time.Hour*24*7/time.Second)
-	log.Printf("start %v, end %v", startTime, endTime)
 	req := CheckInReq{
 		OpenCheckInDataType: 3,
 		StartTime:           startTime,
 		EndTime:             endTime,
 		UserIdList:          userIDs,
 	}
-	var data []byte
-	data, err = json.Marshal(req)
-	if err != nil {
-		return
-	}
 
-	uri := fmt.Sprintf("%s?access_token=%s", urlCheckinData, token)
-	err = a.api.c.PostJSON(uri, data, result)
+	err = a.c.PostJSON(UriPrefix+"/checkin/getcheckindata", client.MustMarshal(&req), result)
 	return
 }

@@ -7,7 +7,7 @@ import (
 	"encoding/xml"
 	"fmt"
 
-	"fhyx.online/tencent-api-go/wxbizmsgcrypt"
+	"daxv.cn/gopak/tencent-api-go/wxbizmsgcrypt"
 )
 
 type MsgContent struct {

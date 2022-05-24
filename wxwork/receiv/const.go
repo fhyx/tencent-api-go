@@ -25,6 +25,9 @@ const (
 const (
 	// EventTypeChangeContact 企业成员变更事件
 	EventTypeChangeContact EventType = "change_contact"
+
+	// EventTypeSysApprovalChange 审批申请状态变化回调通知
+	EventTypeSysApprovalChange EventType = "sys_approval_change"
 )
 
 // create_user,update_user,delete_user,
