@@ -1,7 +1,7 @@
 package wxwork
 
 import (
-	"daxv.cn/gopak/tencent-api-go/models"
+	"gopak.cc/tencent-api-go/models"
 )
 
 type User = models.User

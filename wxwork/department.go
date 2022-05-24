@@ -1,8 +1,8 @@
 package wxwork
 
 import (
-	"daxv.cn/gopak/tencent-api-go/client"
-	"daxv.cn/gopak/tencent-api-go/models"
+	"gopak.cc/tencent-api-go/client"
+	"gopak.cc/tencent-api-go/models"
 )
 
 type Department = models.Department

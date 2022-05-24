@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"daxv.cn/gopak/tencent-api-go/client"
+	"gopak.cc/tencent-api-go/client"
 )
 
 var (

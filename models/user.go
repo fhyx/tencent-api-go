@@ -1,7 +1,7 @@
 package models
 
 import (
-	"daxv.cn/gopak/tencent-api-go/gender"
+	"gopak.cc/tencent-api-go/gender"
 )
 
 type Status uint8
