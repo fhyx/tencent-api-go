@@ -1,7 +1,7 @@
 package exmail
 
 import (
-	"gopak.cc/tencent-api-go/log"
+	"daxv.cn/gopak/tencent-api-go/log"
 )
 
 func logger() log.Logger {
