@@ -1,7 +1,7 @@
 package receiv
 
 import (
-	"daxv.cn/gopak/tencent-api-go/log"
+	"gopak.cc/tencent-api-go/log"
 )
 
 func logger() log.Logger {

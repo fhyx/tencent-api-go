@@ -3,7 +3,7 @@ package wxwork
 import (
 	"time"
 
-	"daxv.cn/gopak/tencent-api-go/client"
+	"gopak.cc/tencent-api-go/client"
 )
 
 type CheckInReq struct {

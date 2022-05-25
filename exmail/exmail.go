@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"daxv.cn/gopak/tencent-api-go/client"
-	"daxv.cn/gopak/tencent-api-go/gender"
+	"gopak.cc/tencent-api-go/client"
+	"gopak.cc/tencent-api-go/gender"
 )
 
 const (
