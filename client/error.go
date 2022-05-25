@@ -1,7 +1,7 @@
 package client
 
 import (
-	"gopak.cc/tencent-api-go/models"
+	"daxv.cn/gopak/tencent-api-go/models"
 )
 
 type Error = models.Error

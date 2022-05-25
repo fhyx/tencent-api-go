@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"time"
 
-	"gopak.cc/tencent-api-go/client"
-	"gopak.cc/tencent-api-go/models/oa"
+	"daxv.cn/gopak/tencent-api-go/client"
+	"daxv.cn/gopak/tencent-api-go/models/oa"
 )
 
 type reqOAGetTemplateDetail struct {

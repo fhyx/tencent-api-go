@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"gopak.cc/tencent-api-go/wxbizmsgcrypt"
-	"gopak.cc/tencent-api-go/wxwork/webhook"
+	"daxv.cn/gopak/tencent-api-go/wxbizmsgcrypt"
+	"daxv.cn/gopak/tencent-api-go/wxwork/webhook"
 )
 
 type Config struct {
