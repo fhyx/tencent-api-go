@@ -76,3 +76,7 @@ type IDGetter interface {
 type NameGetter interface {
 	GetName() string
 }
+
+type MessageGetter interface {
+	GetMessage() string
+}

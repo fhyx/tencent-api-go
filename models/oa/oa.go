@@ -13,7 +13,7 @@ type ApplyEvent struct {
 	// Notifier 抄送人节点userid列表，仅use_template_approver为0时生效。
 	Notifier []string `json:"notifyer"`
 	// NotifyType 抄送方式：1-提单时抄送（默认值）； 2-单据通过后抄送；3-提单和单据通过后抄送。仅use_template_approver为0时生效。
-	NotifyType *uint8 `json:"notify_type"`
+	NotifyType uint8 `json:"notify_type,omitempty"`
 	// ApplyData 审批申请数据，可定义审批申请中各个控件的值，其中必填项必须有值，选填项可为空，数据结构同“获取审批申请详情”接口返回值中同名参数“apply_data”
 	ApplyData Contents `json:"apply_data"`
 	// SummaryList 摘要信息，用于显示在审批通知卡片、审批列表的摘要信息，最多3行

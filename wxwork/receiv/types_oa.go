@@ -1,5 +1,7 @@
 package receiv
 
+import "fmt"
+
 // EventSysApprovalChange 接收的事件消息，审批申请状态变化回调通知
 type EventSysApprovalChange struct {
 	Event
@@ -14,6 +16,11 @@ func (esac *EventSysApprovalChange) GetID() string {
 
 func (esac *EventSysApprovalChange) GetName() string {
 	return esac.ApprovalInfo.SpName
+}
+
+func (esac *EventSysApprovalChange) GetMessage() string {
+	return fmt.Sprintf("%q ss_%d sce_%d", esac.ApprovalInfo.TemplateID,
+		esac.ApprovalInfo.SpStatus, esac.ApprovalInfo.StatusChangeEvent)
 }
 
 // OAApprovalInfo 审批申请状态变化回调通知

@@ -114,6 +114,9 @@ func (s *server) notifyMsg(m interface{}) {
 			if name, ok := m.(NameGetter); ok {
 				text += " name=" + name.GetName()
 			}
+			if msg, ok := m.(MessageGetter); ok {
+				text += " msg=" + msg.GetMessage()
+			}
 			s.notifyText(text)
 		}
 	}
