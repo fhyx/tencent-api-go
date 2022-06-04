@@ -8,6 +8,8 @@ import (
 	"daxv.cn/gopak/tencent-api-go/models/oa"
 )
 
+type OAApplyEvent = oa.ApplyEvent
+
 type reqOAGetTemplateDetail struct {
 	TemplateID string `json:"template_id"`
 }
@@ -111,7 +113,7 @@ func (a *API) GetOAApprovalInfo(req GetOAApprovalInfoReq) ([]string, error) {
 	return resp.SpNoList, nil
 }
 
-// GetOAApprovalDetail 提交审批申请
+// GetOAApprovalDetail 获取审批申请详情
 func (a *API) GetOAApprovalDetail(spNo string) (*oa.ApprovalDetail, error) {
 	var resp respOAGetApprovalDetail
 	err := a.c.PostJSON(UriPrefix+"/oa/getapprovaldetail", client.MustMarshal(&reqOAGetApprovalDetail{

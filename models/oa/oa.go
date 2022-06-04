@@ -195,11 +195,11 @@ type ContentFormula struct {
 // ContentDateRange 时长组件
 type ContentDateRange struct {
 	// NewBegin 开始时间，unix时间戳
-	NewBegin int `json:"new_begin"`
+	NewBegin int64 `json:"new_begin"`
 	// NewEnd 结束时间，unix时间戳
-	NewEnd int `json:"new_end"`
+	NewEnd int64 `json:"new_end"`
 	// NewDuration 时长范围，单位秒
-	NewDuration int `json:"new_duration"`
+	NewDuration int64 `json:"new_duration"`
 }
 
 // TemplateDetail 审批模板详情
@@ -382,7 +382,7 @@ type ApprovalDetail struct {
 	// TemplateID 审批模板id。可在“获取审批申请详情”、“审批状态变化回调通知”中获得，也可在审批模板的模板编辑页面链接中获得。
 	TemplateID string `json:"template_id"`
 	// ApplyTime 审批申请提交时间,Unix时间戳
-	ApplyTime int `json:"apply_time"`
+	ApplyTime int64 `json:"apply_time"`
 	// Applicant 申请人信息
 	Applicant ApprovalDetailApplicant `json:"applyer"`
 	// SpRecord 审批流程信息，可能有多个审批节点。
@@ -422,7 +422,7 @@ type ApprovalDetailSpRecordDetail struct {
 	// SpStatus 分支审批人审批状态：1-审批中；2-已同意；3-已驳回；4-已转审
 	SpStatus uint8 `json:"sp_status"`
 	// SpTime 节点分支审批人审批操作时间戳，0表示未操作
-	SpTime int `json:"sptime"`
+	SpTime int64 `json:"sptime"`
 	// MediaID 节点分支审批人审批意见附件，media_id具体使用请参考：文档-获取临时素材
 	MediaID []string `json:"media_id"`
 }
@@ -444,7 +444,7 @@ type ApprovalDetailComment struct {
 	// CommentUserInfo 备注人信息
 	CommentUserInfo ApprovalDetailCommentUserInfo `json:"commentUserInfo"`
 	// CommentTime 备注提交时间戳，Unix时间戳
-	CommentTime int `json:"commenttime"`
+	CommentTime int64 `json:"commenttime"`
 	// CommentTontent 备注文本内容
 	CommentTontent string `json:"commentcontent"`
 	// CommentID 备注id
