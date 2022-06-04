@@ -35,25 +35,9 @@ type Content struct {
 	// ID 控件id：控件的唯一id，可通过“获取审批模板详情”接口获取
 	ID string `json:"id"`
 	// Title 控件名称 ，若配置了多语言则会包含中英文的控件名称
-	Title []Text `json:"title"`
+	Title Texts `json:"title"`
 	// Value 控件值 ，需在此为申请人在各个控件中填写内容不同控件有不同的赋值参数，具体说明详见附录。模板配置的控件属性为必填时，对应value值需要有值。
 	Value ContentValue `json:"value"`
-}
-
-func (c *Content) CheckTitle(args ...string) bool {
-	if len(args) > 0 {
-		for _, t := range c.Title {
-			if len(args) == 1 && t.Text == args[0] {
-				return true
-			}
-			if len(args) > 1 {
-				if t.Text == args[0] && t.Lang == args[1] {
-					return true
-				}
-			}
-		}
-	}
-	return false
 }
 
 // Contents 审批申请详情，由多个表单控件及其内容组成，其中包含需要对控件赋值的信息
@@ -70,10 +54,28 @@ type Text struct {
 	Lang string `json:"lang"`
 }
 
+func (t *Text) Expect(text, lang string) bool {
+	if lang == "" {
+		return t.Text == text
+	}
+	return t.Text == text && t.Lang == lang
+}
+
+type Texts []Text
+
+func (t Texts) ExpectOne(text, lang string) bool {
+	for i := range t {
+		if t[i].Expect(text, lang) {
+			return true
+		}
+	}
+	return false
+}
+
 // SummaryList 摘要行信息，用于定义某一行摘要显示的内容
 type SummaryList struct {
 	// SummaryInfo 摘要行信息，用于定义某一行摘要显示的内容
-	SummaryInfo []Text `json:"summary_info"`
+	SummaryInfo Texts `json:"summary_info"`
 }
 
 // ContentValue 控件值 ，需在此为申请人在各个控件中填写内容不同控件有不同的赋值参数，具体说明详见附录。模板配置的控件属性为必填时，对应value值需要有值。
@@ -221,7 +223,7 @@ type ContentDateRange struct {
 // TemplateDetail 审批模板详情
 type TemplateDetail struct {
 	// TemplateNames 模板名称，若配置了多语言则会包含中英文的模板名称，默认为zh_CN中文
-	TemplateNames []Text `json:"template_names"`
+	TemplateNames Texts `json:"template_names"`
 	// TemplateContent 模板控件信息
 	TemplateContent TemplateControls `json:"template_content"`
 	// Vacation Vacation控件（假勤控件）
@@ -249,9 +251,9 @@ type TemplateControlProperty struct {
 	// ID 模板控件配置，包含了部分控件类型的附加类型、属性，详见附录说明。目前有配置信息的控件类型有：Date-日期/日期+时间；Selector-单选/多选；Contact-成员/部门；Table-明细；Attendance-假勤组件（请假、外出、出差、加班）
 	ID string `json:"id"`
 	// Title 模板控件配置，包含了部分控件类型的附加类型、属性，详见附录说明。目前有配置信息的控件类型有：Date-日期/日期+时间；Selector-单选/多选；Contact-成员/部门；Table-明细；Attendance-假勤组件（请假、外出、出差、加班）
-	Title []Text `json:"title"`
+	Title Texts `json:"title"`
 	// Placeholder 模板控件配置，包含了部分控件类型的附加类型、属性，详见附录说明。目前有配置信息的控件类型有：Date-日期/日期+时间；Selector-单选/多选；Contact-成员/部门；Table-明细；Attendance-假勤组件（请假、外出、出差、加班）
-	Placeholder []Text `json:"placeholder"`
+	Placeholder Texts `json:"placeholder"`
 	// Require 是否必填：1-必填；0-非必填
 	Require uint8 `json:"require"`
 	// UnPrint 是否参与打印：1-不参与打印；0-参与打印
@@ -291,7 +293,7 @@ type TemplateControlConfigSelectorOption struct {
 	// Key 选项key，选项的唯一id，可用于发起审批申请，为单选/多选控件赋值
 	Key string `json:"key"`
 	// Value 选项值，若配置了多语言则会包含中英文的选项值，默认为zh_CN中文
-	Value []Text `json:"value"`
+	Value Texts `json:"value"`
 }
 
 // TemplateControlConfigContact 类型标志，单选/多选控件的config中会包含此参数
@@ -333,7 +335,7 @@ type TemplateControlConfigVacationItem struct {
 	// ID 假期类型标识id
 	ID int `json:"id"`
 	// Name 假期类型名称，默认zh_CN中文名称
-	Name []Text `json:"name"`
+	Name Texts `json:"name"`
 }
 
 // Control 控件类型
