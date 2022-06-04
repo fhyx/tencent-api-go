@@ -40,6 +40,22 @@ type Content struct {
 	Value ContentValue `json:"value"`
 }
 
+func (c *Content) CheckTitle(args ...string) bool {
+	if len(args) > 0 {
+		for _, t := range c.Title {
+			if len(args) == 1 && t.Text == args[0] {
+				return true
+			}
+			if len(args) > 1 {
+				if t.Text == args[0] && t.Lang == args[1] {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
 // Contents 审批申请详情，由多个表单控件及其内容组成，其中包含需要对控件赋值的信息
 type Contents struct {
 	// Contents 审批申请详情，由多个表单控件及其内容组成，其中包含需要对控件赋值的信息
