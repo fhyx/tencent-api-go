@@ -46,6 +46,15 @@ type Contents struct {
 	Contents []Content `json:"contents"`
 }
 
+func (a *Contents) ExpectValue(text, lang string) (ContentValue, bool) {
+	for _, c := range a.Contents {
+		if c.Title.ExpectOne(text, lang) {
+			return c.Value, true
+		}
+	}
+	return ContentValue{}, false
+}
+
 // Text 通用文本信息
 type Text struct {
 	// Text 文字
