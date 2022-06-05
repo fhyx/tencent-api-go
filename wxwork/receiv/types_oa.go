@@ -23,7 +23,7 @@ func (esac *EventSysApprovalChange) GetName() string {
 }
 
 func (esac *EventSysApprovalChange) GetMessage() string {
-	return fmt.Sprintf("%q ss_%d sce_%d", esac.ApprovalInfo.TemplateID,
+	return fmt.Sprintf("%q ss %q sce %q", esac.ApprovalInfo.TemplateID,
 		esac.ApprovalInfo.SpStatus, esac.ApprovalInfo.StatusChangeEvent)
 }
 
