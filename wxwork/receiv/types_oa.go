@@ -1,6 +1,10 @@
 package receiv
 
-import "fmt"
+import (
+	"fmt"
+
+	"daxv.cn/gopak/tencent-api-go/models/oa"
+)
 
 // EventSysApprovalChange 接收的事件消息，审批申请状态变化回调通知
 type EventSysApprovalChange struct {
@@ -30,7 +34,7 @@ type OAApprovalInfo struct {
 	// SpName 审批申请类型名称（审批模板名称）
 	SpName string `xml:"SpName"`
 	// SpStatus 申请单状态：1-审批中；2-已通过；3-已驳回；4-已撤销；6-通过后撤销；7-已删除；10-已支付
-	SpStatus int32 `xml:"SpStatus"`
+	SpStatus oa.SpStatus `xml:"SpStatus"`
 	// TemplateID 审批模板id。可在“获取审批申请详情”、“审批状态变化回调通知”中获得，也可在审批模板的模板编辑页面链接中获得。
 	TemplateID string `xml:"TemplateId"`
 	// ApplyTime 审批申请提交时间,Unix时间戳
@@ -44,7 +48,7 @@ type OAApprovalInfo struct {
 	// Comments 审批申请备注信息，可能有多个备注节点
 	Comments []OAApprovalInfoComment `xml:"Comments"`
 	// StatusChangeEvent 审批申请状态变化类型：1-提单；2-同意；3-驳回；4-转审；5-催办；6-撤销；8-通过后撤销；10-添加备注
-	StatusChangeEvent int32 `xml:"StatuChangeEvent"`
+	StatusChangeEvent oa.ApprovalStatuChangeEvent `xml:"StatuChangeEvent"`
 }
 
 // OAApprovalInfoApplicant 申请人信息
