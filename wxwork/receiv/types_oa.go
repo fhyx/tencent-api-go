@@ -23,7 +23,7 @@ func (esac *EventSysApprovalChange) GetName() string {
 }
 
 func (esac *EventSysApprovalChange) GetMessage() string {
-	return fmt.Sprintf("%q ss %q sce %q", esac.ApprovalInfo.TemplateID,
+	return fmt.Sprintf("%q %q ss %q sce %q", esac.ApprovalInfo.TemplateID, esac.ApprovalInfo.Applicant.UserID,
 		esac.ApprovalInfo.SpStatus, esac.ApprovalInfo.StatusChangeEvent)
 }
 
@@ -46,7 +46,7 @@ type OAApprovalInfo struct {
 	// Notifier 抄送信息，可能有多个抄送节点
 	Notifier OAApprovalInfoNotifier `xml:"Notifyer"`
 	// Comments 审批申请备注信息，可能有多个备注节点
-	Comments []OAApprovalInfoComment `xml:"Comments"`
+	Comments OAApprovalInfoComments `xml:"Comments"`
 	// StatusChangeEvent 审批申请状态变化类型：1-提单；2-同意；3-驳回；4-转审；5-催办；6-撤销；8-通过后撤销；10-添加备注
 	StatusChangeEvent oa.ApprovalStatuChangeEvent `xml:"StatuChangeEvent"`
 }
@@ -108,6 +108,12 @@ type OAApprovalInfoComment struct {
 	// Attach 备注意见附件，值是附件media_id具体使用请参考：文档-获取临时素材
 	Attach []string `xml:"Attach"`
 }
+
+func (aic *OAApprovalInfoComment) String() string {
+	return fmt.Sprintf("%s: %q", aic.CommentUserInfo.UserID, aic.CommentContent)
+}
+
+type OAApprovalInfoComments []OAApprovalInfoComment
 
 // OAApprovalInfoCommentUserInfo 备注人信息
 type OAApprovalInfoCommentUserInfo struct {
