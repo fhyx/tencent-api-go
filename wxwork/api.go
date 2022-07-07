@@ -22,6 +22,8 @@ type API struct {
 
 	corpID     string
 	corpSecret string
+
+	AgentID int
 }
 
 // return new API instance from corpID, corpSecret
