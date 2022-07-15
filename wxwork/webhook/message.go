@@ -54,4 +54,13 @@ func NewMarkdownMessage(content string) *Message {
 	}
 }
 
+func NewArticleMessage(title, text string, link, pic string) *Message {
+	return &Message{
+		MsgType: "news",
+		Articles: []MessageArticle{
+			{Title: title, Description: text, URL: link, PicURL: pic},
+		},
+	}
+}
+
 // TODO: more msg type

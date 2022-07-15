@@ -52,6 +52,10 @@ type eventChangeContactUser struct {
 	Address        string `xml:"Address"`
 }
 
+func (eccu *eventChangeContactUser) GetAvatar() string {
+	return eccu.Avatar
+}
+
 type eventChangeContactExtAttr struct {
 	Text  string `xml:",chardata" json:"-"`
 	Attrs []struct {

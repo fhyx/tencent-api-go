@@ -77,6 +77,10 @@ type NameGetter interface {
 	GetName() string
 }
 
+type AvatarGetter interface {
+	GetAvatar() string
+}
+
 type MessageGetter interface {
 	GetMessage() string
 }

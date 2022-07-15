@@ -104,6 +104,12 @@ func (s *server) notifyText(msg string) {
 	}
 }
 
+func (s *server) notifyImage(msg, uri string) {
+	if s.nh != nil {
+		_ = s.nh.Notify(webhook.NewMarkdownMessage(fmt.Sprintf("![](%s)\n>%s", uri, msg)))
+	}
+}
+
 func (s *server) notifyMsg(m interface{}) {
 	if s.nh != nil {
 		if v, ok := m.(fmt.Stringer); ok {
@@ -116,6 +122,13 @@ func (s *server) notifyMsg(m interface{}) {
 			}
 			if msg, ok := m.(MessageGetter); ok {
 				text += " msg=" + msg.GetMessage()
+			}
+			if v, ok := m.(AvatarGetter); ok {
+				uri := v.GetAvatar()
+				if len(uri) > 0 {
+					s.notifyImage(text, v.GetAvatar())
+					return
+				}
 			}
 			s.notifyText(text)
 		}
