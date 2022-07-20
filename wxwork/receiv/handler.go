@@ -106,7 +106,7 @@ func (s *server) notifyText(msg string) {
 
 func (s *server) notifyImage(msg, uri string) {
 	if s.nh != nil {
-		_ = s.nh.Notify(webhook.NewMarkdownMessage(fmt.Sprintf("![](%s)\n>%s", uri, msg)))
+		_ = s.nh.Notify(webhook.NewMarkdownMessage(fmt.Sprintf("![image](%s)\n>%s", uri, msg)))
 	}
 }
 
