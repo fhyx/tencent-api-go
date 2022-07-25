@@ -120,12 +120,12 @@ func (s *server) notifyMsg(m interface{}) {
 			}
 			if v, ok := m.(NameGetter); ok {
 				if s := v.GetName(); len(s) > 0 {
-					text += " name=" + s
+					text += " name='" + s + "'"
 				}
 			}
 			if v, ok := m.(MessageGetter); ok {
 				if s := v.GetMessage(); len(s) > 0 {
-					text += " msg=" + s
+					text += " msg='" + s + "'"
 				}
 			}
 			if v, ok := m.(ChangesGetter); ok {
