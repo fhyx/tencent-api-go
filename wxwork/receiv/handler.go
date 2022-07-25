@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"daxv.cn/gopak/tencent-api-go/wxbizmsgcrypt"
 	"daxv.cn/gopak/tencent-api-go/wxwork/webhook"
@@ -117,15 +118,23 @@ func (s *server) notifyMsg(m interface{}) {
 			if id, ok := m.(IDGetter); ok {
 				text += " id=" + id.GetID()
 			}
-			if name, ok := m.(NameGetter); ok {
-				text += " name=" + name.GetName()
+			if v, ok := m.(NameGetter); ok {
+				if s := v.GetName(); len(s) > 0 {
+					text += " name=" + s
+				}
 			}
-			if msg, ok := m.(MessageGetter); ok {
-				text += " msg=" + msg.GetMessage()
+			if v, ok := m.(MessageGetter); ok {
+				if s := v.GetMessage(); len(s) > 0 {
+					text += " msg=" + s
+				}
+			}
+			if v, ok := m.(ChangesGetter); ok {
+				if cs := v.GetChanges(); len(cs) > 0 {
+					text += " chg=" + strings.Join(cs, ",")
+				}
 			}
 			if v, ok := m.(AvatarGetter); ok {
-				uri := v.GetAvatar()
-				if len(uri) > 0 {
+				if uri := v.GetAvatar(); len(uri) > 0 {
 					s.notifyImage(text, v.GetAvatar())
 					return
 				}

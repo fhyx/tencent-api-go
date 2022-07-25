@@ -84,3 +84,7 @@ type AvatarGetter interface {
 type MessageGetter interface {
 	GetMessage() string
 }
+
+type ChangesGetter interface {
+	GetChanges() []string
+}

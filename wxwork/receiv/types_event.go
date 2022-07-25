@@ -56,6 +56,42 @@ func (eccu *eventChangeContactUser) GetAvatar() string {
 	return eccu.Avatar
 }
 
+func (eccu *eventChangeContactUser) GetChanges() (cs []string) {
+	if len(eccu.Name) > 0 {
+		cs = append(cs, "name")
+	}
+	if len(eccu.Alias) > 0 {
+		cs = append(cs, "alias")
+	}
+	if len(eccu.Avatar) > 0 {
+		cs = append(cs, "avatar")
+	}
+	if len(eccu.Mobile) > 0 {
+		cs = append(cs, "mobile")
+	}
+	if len(eccu.Email) > 0 {
+		cs = append(cs, "email")
+	}
+	if len(eccu.BizMail) > 0 {
+		cs = append(cs, "bizMail")
+	}
+	if len(eccu.Department) > 0 {
+		cs = append(cs, "department")
+	}
+	if len(eccu.DirectLeader) > 0 {
+		cs = append(cs, "directLeader")
+	}
+	if len(eccu.IsLeaderInDept) > 0 {
+		cs = append(cs, "isLeaderInDept")
+	}
+
+	if eccu.Status > 0 {
+		cs = append(cs, "status")
+	}
+
+	return
+}
+
 type eventChangeContactExtAttr struct {
 	Text  string `xml:",chardata" json:"-"`
 	Attrs []struct {
