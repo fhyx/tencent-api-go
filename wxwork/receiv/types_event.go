@@ -84,6 +84,13 @@ func (eccu *eventChangeContactUser) GetChanges() (cs []string) {
 	if len(eccu.IsLeaderInDept) > 0 {
 		cs = append(cs, "isLeaderInDept")
 	}
+	if len(eccu.Position) > 0 {
+		cs = append(cs, "position")
+	}
+
+	if eccu.MainDepartment > 0 {
+		cs = append(cs, "mainDept")
+	}
 
 	if eccu.Status > 0 {
 		cs = append(cs, "status")
@@ -112,6 +119,7 @@ type eventChangeContactExtAttr struct {
 
 /*
 <xml>
+
 	<ToUserName><![CDATA[toUser]]></ToUserName>
 	<FromUserName><![CDATA[sys]]></FromUserName>
 	<CreateTime>1403610513</CreateTime>
@@ -151,6 +159,7 @@ type eventChangeContactExtAttr struct {
 		</Web>
 		</Item>
 	</ExtAttr>
+
 </xml>
 */
 type EventChangeContactCreateUser struct {
@@ -173,6 +182,7 @@ func (e *EventChangeContactCreateUser) GetName() string {
 
 /*
 <xml>
+
 	<ToUserName><![CDATA[toUser]]></ToUserName>
 	<FromUserName><![CDATA[sys]]></FromUserName>
 	<CreateTime>1403610513</CreateTime>
@@ -211,6 +221,7 @@ func (e *EventChangeContactCreateUser) GetName() string {
 		</Web>
 		</Item>
 	</ExtAttr>
+
 </xml>
 */
 type EventChangeContactUpdateUser struct {
@@ -237,6 +248,7 @@ func (e *EventChangeContactUpdateUser) GetName() string {
 
 /*
 <xml>
+
 	<ToUserName><![CDATA[toUser]]></ToUserName>
 	<FromUserName><![CDATA[sys]]></FromUserName>
 	<CreateTime>1403610513</CreateTime>
@@ -244,6 +256,7 @@ func (e *EventChangeContactUpdateUser) GetName() string {
 	<Event><![CDATA[change_contact]]></Event>
 	<ChangeType>delete_user</ChangeType>
 	<UserID><![CDATA[zhangsan]]></UserID>
+
 </xml>
 */
 type EventChangeContactDeleteUser struct {
@@ -257,16 +270,18 @@ func (e *EventChangeContactDeleteUser) GetID() string {
 
 /*
 <xml>
-    <ToUserName><![CDATA[toUser]]></ToUserName>
-    <FromUserName><![CDATA[sys]]></FromUserName>
-    <CreateTime>1403610513</CreateTime>
-    <MsgType><![CDATA[event]]></MsgType>
-    <Event><![CDATA[change_contact]]></Event>
-    <ChangeType>create_party</ChangeType>
-    <Id>2</Id>
-    <Name><![CDATA[张三]]></Name>
-    <ParentId><![CDATA[1]]></ParentId>
-    <Order>1</Order>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[sys]]></FromUserName>
+	<CreateTime>1403610513</CreateTime>
+	<MsgType><![CDATA[event]]></MsgType>
+	<Event><![CDATA[change_contact]]></Event>
+	<ChangeType>create_party</ChangeType>
+	<Id>2</Id>
+	<Name><![CDATA[张三]]></Name>
+	<ParentId><![CDATA[1]]></ParentId>
+	<Order>1</Order>
+
 </xml>
 */
 type EventChangeContactCreateParty struct {
@@ -287,15 +302,17 @@ func (e *EventChangeContactCreateParty) GetName() string {
 
 /*
 <xml>
-    <ToUserName><![CDATA[toUser]]></ToUserName>
-    <FromUserName><![CDATA[sys]]></FromUserName>
-    <CreateTime>1403610513</CreateTime>
-    <MsgType><![CDATA[event]]></MsgType>
-    <Event><![CDATA[change_contact]]></Event>
-    <ChangeType>update_party</ChangeType>
-    <Id>2</Id>
-    <Name><![CDATA[张三]]></Name>
-    <ParentId><![CDATA[1]]></ParentId>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[sys]]></FromUserName>
+	<CreateTime>1403610513</CreateTime>
+	<MsgType><![CDATA[event]]></MsgType>
+	<Event><![CDATA[change_contact]]></Event>
+	<ChangeType>update_party</ChangeType>
+	<Id>2</Id>
+	<Name><![CDATA[张三]]></Name>
+	<ParentId><![CDATA[1]]></ParentId>
+
 </xml>
 */
 type EventChangeContactUpdateParty struct {
@@ -316,13 +333,15 @@ func (e *EventChangeContactUpdateParty) GetName() string {
 
 /*
 <xml>
-    <ToUserName><![CDATA[toUser]]></ToUserName>
-    <FromUserName><![CDATA[sys]]></FromUserName>
-    <CreateTime>1403610513</CreateTime>
-    <MsgType><![CDATA[event]]></MsgType>
-    <Event><![CDATA[change_contact]]></Event>
-    <ChangeType>delete_party</ChangeType>
-    <Id>2</Id>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[sys]]></FromUserName>
+	<CreateTime>1403610513</CreateTime>
+	<MsgType><![CDATA[event]]></MsgType>
+	<Event><![CDATA[change_contact]]></Event>
+	<ChangeType>delete_party</ChangeType>
+	<Id>2</Id>
+
 </xml>
 */
 type EventChangeContactDeleteParty struct {
@@ -336,17 +355,19 @@ func (e *EventChangeContactDeleteParty) GetID() string {
 
 /*
 <xml>
-    <ToUserName><![CDATA[toUser]]></ToUserName>
-    <FromUserName><![CDATA[sys]]></FromUserName>
-    <CreateTime>1403610513</CreateTime>
-    <MsgType><![CDATA[event]]></MsgType>
-    <Event><![CDATA[change_contact]]></Event>
-    <ChangeType><![CDATA[update_tag]]></ChangeType>
-    <TagId>1</TagId>
-    <AddUserItems><![CDATA[zhangsan,lisi]]></AddUserItems>
-    <DelUserItems><![CDATA[zhangsan1,lisi1]]></DelUserItems>
-    <AddPartyItems><![CDATA[1,2]]></AddPartyItems>
-    <DelPartyItems><![CDATA[3,4]]></DelPartyItems>
+
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[sys]]></FromUserName>
+	<CreateTime>1403610513</CreateTime>
+	<MsgType><![CDATA[event]]></MsgType>
+	<Event><![CDATA[change_contact]]></Event>
+	<ChangeType><![CDATA[update_tag]]></ChangeType>
+	<TagId>1</TagId>
+	<AddUserItems><![CDATA[zhangsan,lisi]]></AddUserItems>
+	<DelUserItems><![CDATA[zhangsan1,lisi1]]></DelUserItems>
+	<AddPartyItems><![CDATA[1,2]]></AddPartyItems>
+	<DelPartyItems><![CDATA[3,4]]></DelPartyItems>
+
 </xml>
 */
 type EventChangeContactUpdateTag struct {

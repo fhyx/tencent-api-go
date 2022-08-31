@@ -19,21 +19,28 @@ type Config struct {
 
 	NotifyURI string
 
-	MsgHandler MessageHandler
+	MsgHandler ReceiveHandler // second
+	ReqHandler ReauestHandler // first
 }
 
-type MessageHandler interface {
+type ReceiveHandler interface {
 	OnReceived(ctx context.Context, msg interface{})
+}
+
+type ReauestHandler interface {
+	OnRequest(req *http.Request, msg interface{})
 }
 
 type Receiver interface {
 	http.Handler
-	SetMessageHandler(mh MessageHandler)
+	SetReceiveHandler(mh ReceiveHandler)
+	SetReauestHandler(reqhdl ReauestHandler)
 }
 
 type server struct {
 	cpt *wxbizmsgcrypt.WXBizMsgCrypt
-	mh  MessageHandler
+	mh  ReceiveHandler
+	rh  ReauestHandler
 	nh  webhook.Notifier
 }
 
@@ -45,6 +52,7 @@ func NewHandler(cfg Config) Receiver {
 			cfg.Token, cfg.EncodingKey,
 			cfg.AppID, wxbizmsgcrypt.XmlType),
 		mh: cfg.MsgHandler,
+		rh: cfg.ReqHandler,
 	}
 	if len(cfg.NotifyURI) > 0 {
 		s.nh = webhook.NewClient(cfg.NotifyURI)
@@ -52,8 +60,12 @@ func NewHandler(cfg Config) Receiver {
 	return s
 }
 
-func (s *server) SetMessageHandler(mh MessageHandler) {
+func (s *server) SetReceiveHandler(mh ReceiveHandler) {
 	s.mh = mh
+}
+
+func (s *server) SetReauestHandler(reqhdl ReauestHandler) {
+	s.rh = reqhdl
 }
 
 func (s *server) echoTestHandler(rw http.ResponseWriter, req *http.Request) {
@@ -86,16 +98,20 @@ func (s *server) eventHandler(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	m, err := s.parseMsg(decrypted)
+	msg, err := s.parseMsg(decrypted)
 	if err != nil {
 		s.notifyText("error: parseMsg fail: " + err.Error())
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if s.mh != nil {
-		s.mh.OnReceived(req.Context(), m)
+	if s.rh != nil {
+		s.rh.OnRequest(req, msg)
+	} else if s.mh != nil {
+		s.mh.OnReceived(req.Context(), msg)
+	} else {
+		logger().Infow("without handler")
 	}
-	s.notifyMsg(m)
+	s.notifyMsg(msg)
 
 }
 
@@ -114,25 +130,27 @@ func (s *server) notifyImage(msg, uri string) {
 func (s *server) notifyMsg(m interface{}) {
 	if s.nh != nil {
 		if v, ok := m.(fmt.Stringer); ok {
-			text := v.String()
+			var sb strings.Builder
+			fmt.Fprintf(&sb, "%s", v)
 			if id, ok := m.(IDGetter); ok {
-				text += " id=" + id.GetID()
+				fmt.Fprintf(&sb, " id=%s", id.GetID())
 			}
 			if v, ok := m.(NameGetter); ok {
 				if s := v.GetName(); len(s) > 0 {
-					text += " name='" + s + "'"
+					fmt.Fprintf(&sb, " name='%s'", s)
 				}
 			}
 			if v, ok := m.(MessageGetter); ok {
 				if s := v.GetMessage(); len(s) > 0 {
-					text += " msg='" + s + "'"
+					fmt.Fprintf(&sb, " msg='%s'", s)
 				}
 			}
 			if v, ok := m.(ChangesGetter); ok {
 				if cs := v.GetChanges(); len(cs) > 0 {
-					text += " chg=" + strings.Join(cs, ",")
+					fmt.Fprintf(&sb, " chg=%q", strings.Join(cs, ","))
 				}
 			}
+			text := sb.String()
 			if v, ok := m.(AvatarGetter); ok {
 				if uri := v.GetAvatar(); len(uri) > 0 {
 					s.notifyImage(text, v.GetAvatar())
