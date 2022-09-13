@@ -237,7 +237,7 @@ type EventChangeContactUpdateUser struct {
 
 func (e *EventChangeContactUpdateUser) GetID() string {
 	if len(e.NewUserID) > 0 {
-		return e.UserID + "|" + e.NewUserID
+		return e.UserID + " ➙ ‘" + e.NewUserID + "’"
 	}
 	return e.UserID
 }
