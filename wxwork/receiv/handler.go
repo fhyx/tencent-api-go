@@ -179,15 +179,15 @@ func (s *server) parseMsg(body []byte) (interface{}, error) {
 		// TODO: more types
 	case MessageTypeEvent:
 		// s.notifyText(fmt.Sprintf("got msg event: %s, change: %s", msg.Event, msg.ChangeType))
-		return s.parseEvent(msg.EvnType, body)
+		return s.parseEvent(msg, body)
 	default:
-		return nil, fmt.Errorf("unknown event '%s'", msg.EvnType)
+		return nil, fmt.Errorf("unknown msg '%s'", msg.EvnType)
 	}
 
 }
 
-func (s *server) parseEvent(et EventType, body []byte) (interface{}, error) {
-	switch et {
+func (s *server) parseEvent(msg *Message, body []byte) (interface{}, error) {
+	switch msg.EvnType {
 	case EventTypeChangeContact:
 		var ec EventChangeContact
 		err := xml.Unmarshal(body, &ec)
@@ -234,7 +234,7 @@ func (s *server) parseEvent(et EventType, body []byte) (interface{}, error) {
 		}
 		return &ev, nil
 	default:
-		return nil, fmt.Errorf("unknown event type '%s", et)
+		return nil, fmt.Errorf("unknown event %s from %s", msg.EvnType, msg.FromUserName)
 	}
 }
 
