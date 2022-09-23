@@ -82,7 +82,7 @@ func (a *API) DeleteUser(userId string) (err error) {
 
 func (a *API) ListDepartment(id string) (data Departments, err error) {
 	var ret departmentResponse
-	err = a.c.GetJSON(UriPrefix+"/department/list?id="+id, &ret)
+	err = a.c.GetJSON(UriPrefix+"/department/simplelist?id="+id, &ret)
 
 	if err == nil {
 		data = ret.Departments
@@ -91,7 +91,33 @@ func (a *API) ListDepartment(id string) (data Departments, err error) {
 	return
 }
 
-// ListUser ...
+// ListIDs 获取成员ID列表, 仅支持通过“通讯录同步secret”调用。
+func (a *API) ListIDs(cursor string, limit int) (data DeptUsers, err error) {
+	if limit == 0 {
+		limit = 200
+	}
+
+	req := ListIDsReq{
+		Cursor: cursor, Limit: uint32(limit),
+	}
+
+	uri := fmt.Sprintf("%s/user/list_id", UriPrefix)
+	var res listIDsResponse
+	err = a.c.PostObj(uri, &req, &res)
+	if err != nil {
+		logger().Infow("list ids fail", "req", req, "err", err)
+		return
+	}
+
+	data = res.DeptUsers
+	return
+}
+
+// ListUser 获取部门成员
+//
+//	此接口已废弃，参见：
+//	    https://developer.work.weixin.qq.com/document/path/96079
+//	    https://developer.work.weixin.qq.com/document/path/90200
 func (a *API) ListUser(lr ListReq) (ListResult, error) {
 	var prefix = UriPrefix + "/user/list"
 	if lr.IsSimple {
@@ -133,14 +159,10 @@ type activeStatRes struct {
 
 // CountActivity ...
 func (a *API) CountActivity(date string) (count int, err error) {
-	var data []byte
-	data, err = json.Marshal(&activeStatReq{Date: date})
-	if err != nil {
-		return
-	}
 
+	req := &activeStatReq{Date: date}
 	var res activeStatRes
-	err = a.c.PostJSON(UriPrefix+"/user/get_active_stat", data, &res)
+	err = a.c.PostObj(UriPrefix+"/user/get_active_stat", req, &res)
 	if err != nil {
 		logger().Infow("count activite fail", "date", date, "err", err)
 		return

@@ -11,18 +11,18 @@ package models
 // parentid	父部门id。根部门为1
 // order	在父部门中的次序值。order值大的排序靠前。值范围是[0, 2^32)
 type Department struct {
-	ID       int    `json:"id"`                 // 部门id，32位整型，指定时必须大于1。若不填该参数，将自动生成id
+	ID       uint32 `json:"id"`                 // 部门id，32位整型，指定时必须大于1。若不填该参数，将自动生成id
 	Name     string `json:"name"`               // 部门名称。长度限制为1~32个字符
 	NameEN   string `json:"name_en,omitempty"`  // 英文名称
-	ParentID int    `json:"parentid,omitempty"` // 父部门id，32位整型
-	Order    int    `json:"order,omitempty"`    // 在父部门中的次序值。order值大的排序靠前。有效的值范围是[0, 2^32)
+	ParentID uint32 `json:"parentid,omitempty"` // 父部门id，32位整型
+	Order    uint32 `json:"order,omitempty"`    // 在父部门中的次序值。order值大的排序靠前。有效的值范围是[0, 2^32)
 }
 
 type Departments []Department
 
 func (z Departments) WithID(id int) *Department {
 	for _, dept := range z {
-		if dept.ID == id {
+		if dept.ID == uint32(id) {
 			return &dept
 		}
 	}

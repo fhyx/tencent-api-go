@@ -149,6 +149,18 @@ func (c *Client) PostJSON(uri string, data []byte, obj interface{}) error {
 	return err
 }
 
+func (c *Client) PostObj(uri string, in any, res any) (err error) {
+	if in == nil {
+		return fmt.Errorf("empty input")
+	}
+	var data []byte
+	data, err = json.Marshal(in)
+	if err != nil {
+		return
+	}
+	return c.PostJSON(uri, data, res)
+}
+
 func MustMarshal(obj any) []byte {
 	data, err := json.Marshal(obj)
 	if err != nil {
