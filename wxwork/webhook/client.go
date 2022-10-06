@@ -8,7 +8,7 @@ import (
 )
 
 var hclient = &http.Client{
-	Timeout: time.Second * 8,
+	Timeout: time.Second * 15,
 }
 
 type Notifier interface {
