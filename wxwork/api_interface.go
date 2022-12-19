@@ -18,6 +18,7 @@ type IClient interface {
 	AddUser(user *User) (err error)
 	DeleteUser(userId string) (err error)
 	CountActivity(date string) (int, error)
+	GetDepartment(id string) (dept *Department, err error)
 	ListDepartment(id string) (data Departments, err error)
 	ListUser(r ListReq) (res ListResult, err error)
 	// SyncDepartment(data []DepartmentUp) error

@@ -91,6 +91,17 @@ func (a *API) ListDepartment(id string) (data Departments, err error) {
 	return
 }
 
+func (a *API) GetDepartment(id string) (dept *Department, err error) {
+	var ret departmentResponse
+	err = a.c.GetJSON(UriPrefix+"/department/get?id="+id, &ret)
+
+	if err == nil {
+		dept = ret.Department
+	}
+
+	return
+}
+
 // ListIDs 获取成员ID列表, 仅支持通过“通讯录同步secret”调用。
 func (a *API) ListIDs(cursor string, limit int) (data DeptUsers, err error) {
 	if limit == 0 {
