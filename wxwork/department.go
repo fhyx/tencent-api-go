@@ -33,8 +33,14 @@ type listIDsResponse struct {
 type departmentResponse struct {
 	client.Error
 
-	*Department `json:"department,omitempty"`    // 单个部门详情
-	Departments `json:"department_id,omitempty"` // 子部门ID列表
+	*Department `json:"department,omitempty"` // 单个部门详情
+}
+
+type departmentsResponse struct {
+	client.Error
+
+	Departments   Departments `json:"department,omitempty"`    // 子部门列表
+	DepartmentIDs Departments `json:"department_id,omitempty"` // 子部门ID列表
 }
 
 // FilterDepartment Deprecated with Departments.WithID()

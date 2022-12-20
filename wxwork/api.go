@@ -80,12 +80,32 @@ func (a *API) DeleteUser(userId string) (err error) {
 	return
 }
 
-func (a *API) ListDepartment(id string) (data Departments, err error) {
-	var ret departmentResponse
-	err = a.c.GetJSON(UriPrefix+"/department/simplelist?id="+id, &ret)
+func (a *API) ListDepartment(id ...string) (data Departments, err error) {
+	return a.listDepartment(false, id...)
+}
+func (a *API) ListDepartmentID(id ...string) (data Departments, err error) {
+	return a.listDepartment(true, id...)
+}
+func (a *API) listDepartment(simple bool, id ...string) (data Departments, err error) {
+	var uri string
+	if simple {
+		uri = UriPrefix + "/department/simplelist"
+	} else {
+		uri = UriPrefix + "/department/list"
+	}
+	if len(id) > 0 {
+		uri = uri + "?id=" + id[0]
+	}
+	var ret departmentsResponse
+	err = a.c.GetJSON(uri, &ret)
 
 	if err == nil {
-		data = ret.Departments
+		if simple {
+			data = ret.DepartmentIDs
+		} else {
+			data = ret.Departments
+		}
+
 	}
 
 	return
