@@ -3,7 +3,24 @@ package wxwork
 import (
 	"os"
 	"testing"
+
+	"go.uber.org/zap"
+
+	"daxv.cn/gopak/tencent-api-go/log"
 )
+
+func TestMain(m *testing.M) {
+	lgr, _ := zap.NewDevelopment()
+	defer func() {
+		_ = lgr.Sync() // flushes buffer, if any
+	}()
+	sugar := lgr.Sugar()
+	log.SetLogger(sugar)
+
+	ret := m.Run()
+
+	os.Exit(ret)
+}
 
 func TestAPI(t *testing.T) {
 	wa := NewAPI(os.Getenv("WXWORK_CORP_ID"), os.Getenv("WXWORK_APP_SECRET"))

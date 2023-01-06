@@ -88,7 +88,7 @@ type externalProfile struct {
 // open_userid	全局唯一。对于同一个服务商，不同应用获取到企业内同一个成员的open_userid是相同的，最多64个字节。仅第三方应用可获取
 // main_department	主部门，仅当应用对主部门有查看权限时返回。
 type User struct {
-	Error
+	WcError
 
 	UID           string        `json:"userid"`
 	Name          string        `json:"name,omitempty"`
