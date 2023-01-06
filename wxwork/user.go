@@ -9,7 +9,7 @@ type Users = models.Users
 type UserUp = models.User
 
 type usersResponse struct {
-	models.Error
+	models.WcError
 
 	UserList Users `json:"userlist"`
 }
@@ -20,7 +20,7 @@ func (ur *usersResponse) Users() Users {
 
 // OAuth2UserInfo 为用户 OAuth2 验证登录后的简单信息
 type OAuth2UserInfo struct {
-	models.Error
+	models.WcError
 
 	UserID     string `json:"UserId,omitempty"`
 	DeviceID   string `json:"DeviceId,omitempty"`

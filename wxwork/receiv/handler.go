@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -87,7 +87,7 @@ func (s *server) eventHandler(rw http.ResponseWriter, req *http.Request) {
 	msgSign := req.FormValue("msg_signature")
 	timestamp := req.FormValue("timestamp")
 	nonce := req.FormValue("nonce")
-	body, err := ioutil.ReadAll(req.Body)
+	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		return
 	}

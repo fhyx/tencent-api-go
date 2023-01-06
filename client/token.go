@@ -79,10 +79,10 @@ func (th *TokenHolder) requestToken() (token *Token, err error) {
 	if th.apiAuths != "" { // for ExMail Old API
 		bodyStr := "grant_type=client_credentials"
 		uri = th.base
-		resp, err = DoHTTP("POST", uri, th.apiAuths, bytes.NewBufferString(bodyStr))
+		resp, err = DoHTTPData("POST", uri, th.apiAuths, bytes.NewBufferString(bodyStr))
 	} else if th.corpId != "" && th.corpSecret != "" { // for ExWechat and ExMail
 		uri = fmt.Sprintf("%s?corpid=%s&corpsecret=%s", th.base, th.corpId, th.corpSecret)
-		resp, err = DoHTTP("GET", uri, "", nil)
+		resp, err = DoHTTPData("GET", uri, "", nil)
 	} else {
 		err = errEmptyAuths
 	}

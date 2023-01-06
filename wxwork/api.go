@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"daxv.cn/gopak/tencent-api-go/client"
+	"daxv.cn/gopak/tencent-api-go/models"
 )
 
 var (
@@ -184,7 +185,7 @@ type activeStatReq struct {
 }
 
 type activeStatRes struct {
-	client.Error
+	models.WcError
 	ActiveCount int `json:"active_cnt"`
 }
 
@@ -204,6 +205,8 @@ func (a *API) CountActivity(date string) (count int, err error) {
 }
 
 type IPListResult struct {
+	models.WcError
+
 	IPList []string `json:"ip_list"`
 }
 

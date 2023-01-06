@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 )
@@ -46,27 +44,28 @@ func (c *Client) SetContentType(ctype string) {
 	}
 }
 
-func (c *Client) Do(method, uri string, body io.Reader) ([]byte, error) {
+func (c *Client) makeRequest(method, uri string, body io.Reader) (req *http.Request, err error) {
 	token, err := c.GetAuthToken()
 	if err != nil {
 		return nil, err
 	}
+
 	u, err := url.Parse(uri)
 	if err != nil {
 		return nil, err
 	}
+
 	q := u.Query()
 	q.Set("access_token", token)
 	u.RawQuery = q.Encode()
 	uri = u.String()
 
-	logger().Debugw("client.do", "method", method, "uri", uri)
-	req, e := http.NewRequest(method, uri, body)
-	if e != nil {
-		log.Println(e, method, uri)
-		return nil, e
+	// logger().Debugw("client.do", "method", method, "uri", uri)
+	req, err = http.NewRequest(method, uri, body)
+	if err != nil {
+		logger().Infow("NewRequest fail", "err", err, "method", method, "uri", uri)
+		return
 	}
-
 	if method == "POST" {
 		if c.ctype != "" {
 			req.Header.Set("Content-Type", c.ctype)
@@ -77,72 +76,111 @@ func (c *Client) Do(method, uri string, body io.Reader) ([]byte, error) {
 	if c.auths != "" {
 		req.Header.Set("Authorization", c.auths)
 	}
-
-	return doRequest(c.httpClient, req)
+	return
 }
 
-func doRequest(client *http.Client, req *http.Request) ([]byte, error) {
+func (c *Client) Do(method, uri string, body io.Reader, rf respFunc) error {
+	req, err := c.makeRequest(method, uri, body)
+	if err != nil {
+		return err
+	}
+	return doRequest(c.httpClient, req, rf)
+}
+
+type respFunc func(hdr http.Header, r io.Reader, cl int64) error
+
+func doRequest(client *http.Client, req *http.Request, rf respFunc) error {
 	resp, e := client.Do(req)
 	if e != nil {
 		logger().Infow("client.do fail", "method", req.Method, "uri", req.RequestURI, "err", e)
-		return nil, e
+		return e
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 300 || resp.StatusCode < 200 {
 		logger().Infow("http fail", "code", resp.StatusCode, "status", resp.Status)
-		return nil, fmt.Errorf("Expecting HTTP status code 20x, but got %v", resp.StatusCode)
+		return fmt.Errorf("Expecting HTTP status code 20x, but got %v", resp.StatusCode)
 	}
 
-	rbody, e := ioutil.ReadAll(resp.Body)
-	if e != nil {
-		logger().Infow("resp read fail", "err", e)
-		return nil, e
+	if rf != nil {
+		// logger().Debugw("doRequest ok", "status", resp.StatusCode, "length", resp.ContentLength, "uri", req.URL.Path)
+		if err := rf(resp.Header, resp.Body, resp.ContentLength); err != nil {
+			logger().Infow("call respFunc fail", "uri", req.URL.Path, "err", err)
+			return err
+		}
 	}
-	logger().Debugw("resp read", "body", string(rbody))
 
-	return rbody, nil
-
+	return nil
 }
 
-func DoHTTP(method, uri string, auths string, body io.Reader) ([]byte, error) {
+func doRequestData(client *http.Client, req *http.Request) (out []byte, err error) {
+	err = doRequest(client, req, func(_ http.Header, r io.Reader, _ int64) error {
+		rbody, e := io.ReadAll(r)
+		if e != nil {
+			logger().Infow("resp read fail", "err", e)
+			return e
+		}
+		out = rbody
+		return nil
+	})
+	return
+}
+
+func DoHTTP(method, uri string, auths string, body io.Reader, rf respFunc) error {
 	req, err := http.NewRequest(method, uri, body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if auths != "" {
 		req.Header.Set("Authorization", auths)
 	}
 	hc := &http.Client{Transport: tr}
-	return doRequest(hc, req)
+	return doRequest(hc, req, rf)
 }
 
-func (c *Client) Get(uri string) ([]byte, error) {
-	return c.Do("GET", uri, nil)
+func DoHTTPData(method, uri string, auths string, body io.Reader) (out []byte, err error) {
+	err = DoHTTP(method, uri, auths, body, func(_ http.Header, r io.Reader, _ int64) error {
+		rbody, e := io.ReadAll(r)
+		if e != nil {
+			logger().Infow("resp read fail", "err", e)
+			return e
+		}
+		out = rbody
+		return nil
+	})
+	return
 }
 
-func (c *Client) Post(uri string, data []byte) ([]byte, error) {
-	return c.Do("POST", uri, bytes.NewReader(data))
-}
-
-func (c *Client) GetJSON(uri string, obj interface{}) error {
-	body, err := c.Get(uri)
+func (c *Client) Get(uri string) (out []byte, err error) {
+	req, err := c.makeRequest("GET", uri, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	err = parseResult(body, obj)
+	return doRequestData(c.httpClient, req)
+}
+
+func (c *Client) Post(uri string, data []byte) (out []byte, err error) {
+	req, err := c.makeRequest("POST", uri, bytes.NewReader(data))
 	if err != nil {
-		log.Printf("GetJSON(uri %s) ERR %s", uri, err)
+		return nil, err
+	}
+	return doRequestData(c.httpClient, req)
+}
+
+func (c *Client) GetJSON(uri string, obj any) error {
+	err := c.Do("GET", uri, nil, func(_ http.Header, r io.Reader, _ int64) error {
+		return jsonInto(r, obj)
+	})
+	if err != nil {
+		logger().Infow("GetJSON fail", "uri", uri, "err", err)
 	}
 	return err
 }
 
-func (c *Client) PostJSON(uri string, data []byte, obj interface{}) error {
-	body, err := c.Post(uri, data)
-	if err != nil {
-		return err
-	}
-	err = parseResult(body, obj)
+func (c *Client) PostJSON(uri string, data []byte, obj any) error {
+	err := c.Do("POST", uri, bytes.NewReader(data), func(_ http.Header, r io.Reader, _ int64) error {
+		return jsonInto(r, obj)
+	})
 	if err != nil {
 		logger().Infow("PostJSON fail", "uri", uri, "data", len(data), "err", err)
 	}
@@ -169,23 +207,22 @@ func MustMarshal(obj any) []byte {
 	return data
 }
 
-func parseResult(resp []byte, obj interface{}) error {
-	// log.Printf("parse result: %s", string(resp))
-	exErr := &Error{}
-	if e := json.Unmarshal(resp, exErr); e != nil {
-		log.Printf("unmarshal api err %s", e)
-		return e
+func jsonInto(r io.Reader, obj any) error {
+	err := json.NewDecoder(r).Decode(obj)
+	if err != nil {
+		logger().Infow("resp decode fail", "err", err)
+		return err
+	}
+	if ce, ok := obj.(ErrorCoder); ok {
+		if code := ce.GetErrorCode(); code != 0 {
+			err = ce
+			logger().Infow("resp has error", "code", code, "err", err)
+		} else {
+			logger().Debugw("resp decode done", "ce", ce.GetErrorMsg())
+		}
+	} else {
+		logger().Debugw("resp decode done", "obj", obj)
 	}
 
-	if exErr.ErrCode != 0 {
-		log.Printf("apiError %s", exErr)
-		return exErr
-	}
-
-	if e := json.Unmarshal(resp, obj); e != nil {
-		log.Printf("unmarshal obj err %s", e)
-		return e
-	}
-
-	return nil
+	return err
 }
