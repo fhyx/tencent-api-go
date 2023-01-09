@@ -138,7 +138,8 @@ type ContentSelector struct {
 // ContentSelectorOption 多选选项，多选属性的选择控件允许输入多个
 type ContentSelectorOption struct {
 	// Key 选项key，可通过“获取审批模板详情”接口获得
-	Key string `json:"key"`
+	Key   string `json:"key"`
+	Value Texts  `json:"value"`
 }
 
 // ContentMember 所选成员内容，即申请人在此控件选择的成员，多选模式下可以有多个
