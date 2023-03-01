@@ -142,6 +142,15 @@ type ContentSelectorOption struct {
 	Value Texts  `json:"value"`
 }
 
+func (c *ContentSelector) Values() (values []string) {
+	for _, options := range c.Options {
+		for _, v := range options.Value {
+			values = append(values, v.Text)
+		}
+	}
+	return
+}
+
 // ContentMember 所选成员内容，即申请人在此控件选择的成员，多选模式下可以有多个
 type ContentMember struct {
 	// UserID 所选成员的userid
