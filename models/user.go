@@ -125,5 +125,12 @@ func (u User) IsEnabled() bool {
 	return u.Enabled == 1
 }
 
+func (u User) GetEmail() string {
+	if len(u.BizMail) > 0 {
+		return u.BizMail
+	}
+	return u.Email
+}
+
 // Users ...
 type Users []User

@@ -5,7 +5,7 @@ import (
 )
 
 type ErrorCoder interface {
-	Error() string
+	GetErr() error
 	GetErrorCode() int
 	GetErrorMsg() string
 }
@@ -15,8 +15,12 @@ type WcError struct {
 	ErrMsg  string `json:"errmsg,omitempty"`
 }
 
-func (e WcError) Error() string {
-	return fmt.Sprintf("errcode: %d, errmsg: %s", e.ErrCode, e.ErrMsg)
+func (e WcError) GetErr() error {
+	if e.ErrCode == 0 {
+		return nil
+	}
+
+	return fmt.Errorf("errcode: %d, errmsg: %s", e.ErrCode, e.ErrMsg)
 }
 
 func (e WcError) GetErrorMsg() string {

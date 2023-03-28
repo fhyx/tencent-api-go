@@ -99,7 +99,7 @@ func (th *TokenHolder) requestToken() (token *Token, err error) {
 		return
 	}
 	if obj.ErrCode != 0 {
-		err = &obj.Error
+		err = obj.GetErr()
 		logger().Infow("request token fail", "uri", uri, "err", err)
 		return
 	}

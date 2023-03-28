@@ -215,7 +215,7 @@ func jsonInto(r io.Reader, obj any) error {
 	}
 	if ce, ok := obj.(ErrorCoder); ok {
 		if code := ce.GetErrorCode(); code != 0 {
-			err = ce
+			err = ce.GetErr()
 			logger().Infow("resp has error", "code", code, "err", err)
 		} else {
 			logger().Debugw("resp decode done", "ce", ce.GetErrorMsg())
