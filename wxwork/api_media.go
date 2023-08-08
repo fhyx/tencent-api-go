@@ -4,7 +4,11 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"net/url"
+	"regexp"
 )
+
+var validFilenameRegex = regexp.MustCompile(`filename\*=utf-8''(.*?)("|\;)`)
 
 type MediaFunc func(filename string, body io.Reader, cl int64) error
 
@@ -21,10 +25,11 @@ func (a *API) GetMedia(mediaID string, mf MediaFunc) error {
 		if f, ok := params["filename"]; ok {
 			filename = f
 		} else {
-			if ext, err := mime.ExtensionsByType(hdr.Get("content-type")); err == nil && len(ext) > 0 {
-				filename = filename + ext[0]
-			} else {
-				logger().Infow("extensions by type fail", "err", err)
+			if filename == mediaID {
+				// 通过正则匹配替换文件名
+				if name := GetFilenameRegex(hdr.Get("content-disposition")); name != "" {
+					filename = name
+				}
 			}
 		}
 
@@ -38,4 +43,20 @@ func (a *API) GetMedia(mediaID string, mf MediaFunc) error {
 		return err
 	}
 	return nil
+}
+
+func GetFilenameRegex(s string) (filename string) {
+	matchs := validFilenameRegex.FindStringSubmatch(s)
+	if matchs == nil {
+		logger().Infow("failed to match", "content-disposition", s)
+	}
+	for k, m := range matchs {
+		if k == 1 && m != "" {
+			if str, err := url.QueryUnescape(m); err == nil {
+				filename = str
+			}
+		}
+	}
+	logger().Infow("regexp matched", "filename", filename)
+	return filename
 }
