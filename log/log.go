@@ -2,6 +2,7 @@ package log
 
 import (
 	syslog "log"
+	"log/slog"
 )
 
 type logger struct{}
@@ -25,19 +26,19 @@ func GetLogger() Logger {
 }
 
 func (z *logger) Debugw(msg string, keysAndValues ...interface{}) {
-	syslog.Print(msg, keysAndValues)
+	slog.Debug(msg, keysAndValues...)
 }
 
 func (z *logger) Infow(msg string, keysAndValues ...interface{}) {
-	syslog.Print(msg, keysAndValues)
+	slog.Info(msg, keysAndValues...)
 }
 
 func (z *logger) Warnw(msg string, keysAndValues ...interface{}) {
-	syslog.Print(msg, keysAndValues)
+	slog.Warn(msg, keysAndValues...)
 }
 
 func (z *logger) Errorw(msg string, keysAndValues ...interface{}) {
-	syslog.Print(msg, keysAndValues)
+	slog.Error(msg, keysAndValues...)
 }
 
 func (z *logger) Fatalw(msg string, keysAndValues ...interface{}) {
