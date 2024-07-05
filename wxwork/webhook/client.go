@@ -35,7 +35,7 @@ func (c *client) Notify(msg *Message) error {
 		logger().Infow("notify fail", "err", err, "msg", msg)
 		return err
 	}
-	resp.Body.Close()
-	logger().Infow("notify ok", "msg", msg, "status", resp.StatusCode)
+	_ = resp.Body.Close()
+	logger().Debugw("notify ok", "msg", msg, "status", resp.StatusCode)
 	return nil
 }
