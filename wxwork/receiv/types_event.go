@@ -242,6 +242,10 @@ func (e *EventChangeContactUpdateUser) GetID() string {
 	return e.UserID
 }
 
+func (e *EventChangeContactUpdateUser) GetNewUserID() string {
+	return e.NewUserID
+}
+
 func (e *EventChangeContactUpdateUser) GetName() string {
 	return e.Name
 }
