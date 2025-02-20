@@ -265,7 +265,7 @@ func (self *WXBizMsgCrypt) VerifyURL(msg_signature, timestamp, nonce, echostr st
 		// fmt.Println(string(receiver_id), self.receiver_id, len(receiver_id), len(self.receiver_id))
 		logger().Infow("invalid request params",
 			"receiver_id", receiver_id, "self.receiver_id", self.receiver_id)
-		return nil, NewCryptError(ValidateCorpidError, "receiver_id is not equil")
+		return nil, NewCryptError(ValidateCorpidError, "receiverID not equal")
 	}
 
 	return msg, nil

@@ -2,7 +2,6 @@ package receiv
 
 import (
 	"context"
-	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -80,9 +79,7 @@ func (s *server) echoTestHandler(rw http.ResponseWriter, req *http.Request) {
 			"timestamp", timestamp, "nonce", nonce, "echoStr", echoStr,
 			"query", req.URL.RawQuery)
 		rw.WriteHeader(http.StatusBadRequest)
-		rw.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(rw).Encode(map[string]any{"error": cryptErr})
-		return
+		text = []byte(fmt.Sprintf("error#%04d: %s", cryptErr.ErrCode, cryptErr.ErrMsg))
 	}
 	rw.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	_, _ = rw.Write([]byte(text))
