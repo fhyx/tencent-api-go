@@ -172,12 +172,62 @@ func (a *API) ListUser(lr ListReq) (ListResult, error) {
 }
 
 func (a *API) GetOAuth2User(code string) (ou *OAuth2UserInfo, err error) {
-	uri := fmt.Sprintf("%s/user/getuserinfo?code=%s", UriPrefix, code)
+	uri := fmt.Sprintf("%s/auth/getuserinfo?code=%s", UriPrefix, code)
 
 	ou = new(OAuth2UserInfo)
 	err = a.c.GetJSON(uri, ou)
 
 	return
+}
+
+func (a *API) GetOAuth2UserDetail(ticket string) (*User, error) {
+	uri := fmt.Sprintf("%s/auth/getuserdetail", UriPrefix)
+	user := new(User)
+	err := a.c.PostJSON(uri, client.MustMarshal(OAuth2UserDetailReq{
+		UserTicket: ticket,
+	}), user)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (a *API) GetUserByOAuth2Code(code string) (*User, error) {
+	ou, err := a.GetOAuth2User(code)
+	if err != nil {
+		return nil, err
+	}
+	logger().Infow("GetOAuth2User", "ou", ou)
+	user, err := a.GetUser(ou.UserID)
+	if err != nil {
+		return nil, err
+	}
+	if len(ou.UserTicket) > 0 {
+		oud, err := a.GetOAuth2UserDetail(ou.UserTicket)
+		if err != nil {
+			return nil, err
+		}
+		if len(user.Avatar) == 0 {
+			user.Avatar = oud.Avatar
+		}
+		if len(user.Email) == 0 {
+			user.Email = oud.Email
+		}
+		if len(user.BizMail) == 0 {
+			user.BizMail = oud.BizMail
+		}
+		if len(user.Mobile) == 0 {
+			user.Mobile = oud.Mobile
+		}
+		if len(user.Address) == 0 {
+			user.Address = oud.Address
+		}
+		if user.Gender == 0 {
+			user.Gender = oud.Gender
+		}
+	}
+
+	return user, nil
 }
 
 type activeStatReq struct {

@@ -182,7 +182,7 @@ func (c *Client) PostJSON(uri string, data []byte, obj any) error {
 		return jsonInto(r, obj)
 	})
 	if err != nil {
-		logger().Infow("PostJSON fail", "uri", uri, "data", len(data), "err", err)
+		logger().Infow("PostJSON fail", "uri", uri, "data", string(data), "err", err)
 	}
 	return err
 }
@@ -215,11 +215,11 @@ func jsonInto(r io.Reader, obj any) error {
 	}
 	if ce, ok := obj.(ErrorCoder); ok {
 		if code := ce.GetErrorCode(); code != 0 {
-			err = ce.GetErr()
-			logger().Infow("resp has error", "code", code, "err", err)
-		} else {
-			logger().Debugw("resp decode done", "ce", ce.GetErrorMsg())
+			logger().Infow("resp has error", "code", code, "msg", ce.GetErrorMsg())
+			return ce.GetErr()
 		}
+
+		logger().Debugw("resp decode done", "msg", ce.GetErrorMsg())
 	} else {
 		logger().Debugw("resp decode done", "obj", obj)
 	}
