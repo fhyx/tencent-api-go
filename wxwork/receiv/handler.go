@@ -2,6 +2,7 @@ package receiv
 
 import (
 	"context"
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -76,10 +77,14 @@ func (s *server) echoTestHandler(rw http.ResponseWriter, req *http.Request) {
 	text, cryptErr := s.cpt.VerifyURL(msgSign, timestamp, nonce, echoStr)
 	if cryptErr != nil {
 		logger().Infow("verifyURL fail", "err", cryptErr,
-			"timestamp", timestamp, "nonce", nonce, "echoStr", echoStr)
+			"timestamp", timestamp, "nonce", nonce, "echoStr", echoStr,
+			"query", req.URL.RawQuery)
 		rw.WriteHeader(http.StatusBadRequest)
+		rw.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(rw).Encode(map[string]any{"error": cryptErr})
 		return
 	}
+	rw.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	_, _ = rw.Write([]byte(text))
 }
 
