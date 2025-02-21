@@ -168,9 +168,9 @@ func (s *server) parseMsg(body []byte) (interface{}, error) {
 	msg := new(Message)
 	err := xml.Unmarshal(body, msg)
 	if nil != err {
-		logger().Infow("Unmarshal fail", "body", string(body), "err", err)
+		logger().Infow("xml decode failed", "body", string(body), "err", err)
 	} else {
-		logger().Infow("Unmarshal ok", "body", string(body), "msg", msg)
+		logger().Infow("xml decode ok", "body", string(body), "msg", msg)
 	}
 
 	switch msg.MsgType {
@@ -183,6 +183,7 @@ func (s *server) parseMsg(body []byte) (interface{}, error) {
 		// s.notifyText(fmt.Sprintf("got msg event: %s, change: %s", msg.Event, msg.ChangeType))
 		return s.parseEvent(msg, body)
 	default:
+		logger().Infow("unknown msg", "MsgType", msg.MsgType)
 		return nil, fmt.Errorf("unknown msg '%s'", msg.EvnType)
 	}
 
@@ -236,6 +237,7 @@ func (s *server) parseEvent(msg *Message, body []byte) (interface{}, error) {
 		}
 		return &ev, nil
 	default:
+		logger().Infow("unknown msg", "EvnType", msg.EvnType)
 		return nil, fmt.Errorf("unknown event %s from %s", msg.EvnType, msg.FromUserName)
 	}
 }
