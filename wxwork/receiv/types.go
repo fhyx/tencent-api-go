@@ -19,8 +19,6 @@ type Message struct {
 	CreateTime int64 `xml:"CreateTime"`
 	// MsgType 消息类型
 	MsgType MessageType `xml:"MsgType"`
-	// MsgID 消息 id，64 位整型
-	MsgID int64 `xml:"MsgId"`
 	// AgentID 企业应用的 id，整型。可在应用的设置页面查看
 	AgentID int64 `xml:"AgentID"`
 	// Event 事件类型 MsgType 为 event
