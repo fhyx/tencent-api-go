@@ -120,12 +120,16 @@ func (s *server) eventHandler(rw http.ResponseWriter, req *http.Request) {
 func (s *server) notifyText(msg string) {
 	if s.nh != nil {
 		_ = s.nh.Notify(webhook.NewTextMessage(msg))
+	} else {
+		logger().Infow("notifier is nil")
 	}
 }
 
 func (s *server) notifyImage(msg, uri string) {
 	if s.nh != nil {
 		_ = s.nh.Notify(webhook.NewMarkdownMessage(fmt.Sprintf("![image](%s)\n>%s", uri, msg)))
+	} else {
+		logger().Infow("notifier is nil")
 	}
 }
 
@@ -183,7 +187,7 @@ func (s *server) parseMsg(body []byte) (interface{}, error) {
 		// s.notifyText(fmt.Sprintf("got msg event: %s, change: %s", msg.Event, msg.ChangeType))
 		return s.parseEvent(msg, body)
 	default:
-		logger().Infow("unknown msg", "MsgType", msg.MsgType)
+		logger().Infow("unknown", "MsgType", msg.MsgType)
 		return nil, fmt.Errorf("unknown msg '%s'", msg.MsgType)
 	}
 
@@ -237,7 +241,7 @@ func (s *server) parseEvent(msg *Message, body []byte) (interface{}, error) {
 		}
 		return &ev, nil
 	default:
-		logger().Infow("unknown msg", "EvnType", msg.EvnType)
+		logger().Infow("unknown", "EvnType", msg.EvnType)
 		return nil, fmt.Errorf("unknown event %s from %s", msg.EvnType, msg.FromUserName)
 	}
 }

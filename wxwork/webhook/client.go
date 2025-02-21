@@ -24,6 +24,10 @@ func NewClient(uri string) Notifier {
 }
 
 func (c *client) Notify(msg *Message) error {
+	if len(c.uri) == 0 {
+		logger().Infow("empty uri, notify to log", "msg", msg)
+		return nil
+	}
 	b, err := json.Marshal(msg)
 	if err != nil {
 		logger().Infow("marshal fail", "err", err)
@@ -35,7 +39,12 @@ func (c *client) Notify(msg *Message) error {
 		logger().Infow("notify fail", "err", err, "msg", msg)
 		return err
 	}
+	if resp.StatusCode > 300 {
+		logger().Infow("notified", "msg", msg, "status", resp.Status)
+	} else {
+		logger().Debugw("notified", "msg", msg, "status", resp.StatusCode)
+	}
 	_ = resp.Body.Close()
-	logger().Debugw("notify ok", "msg", msg, "status", resp.StatusCode)
+
 	return nil
 }
