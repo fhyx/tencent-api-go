@@ -184,7 +184,7 @@ func (s *server) parseMsg(body []byte) (interface{}, error) {
 		return s.parseEvent(msg, body)
 	default:
 		logger().Infow("unknown msg", "MsgType", msg.MsgType)
-		return nil, fmt.Errorf("unknown msg '%s'", msg.EvnType)
+		return nil, fmt.Errorf("unknown msg '%s'", msg.MsgType)
 	}
 
 }
