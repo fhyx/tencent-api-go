@@ -17,12 +17,16 @@ type Event struct {
 	CreateTime   int64       `xml:"CreateTime"`   // 消息创建时间 （整型）
 	MsgType      MessageType `xml:"MsgType"`      // 消息的类型，此时固定为event
 	EvnType      EventType   `xml:"Event"`        // 事件类型
+	EventKey     string      `xml:"EventKey"`     // 事件KEY值, 与具体事件目标对应
 	AgentID      int32       `xml:"AgentID"`      // 企业应用的id，整型。可在应用的设置页面查看
 }
 
 func (e *Event) String() string {
-	now := time.Unix(e.CreateTime, 0)
-	return fmt.Sprintf("%s %s %s %d", now.Format(eventLayout), e.MsgType, e.EvnType, e.AgentID)
+	now := time.Unix(e.CreateTime, 0).Format(eventLayout)
+	if len(e.EventKey) > 0 {
+		return fmt.Sprintf("%s %s %s %d %s", now, e.MsgType, e.EvnType, e.AgentID, e.EventKey)
+	}
+	return fmt.Sprintf("%s %s %s %d", now, e.MsgType, e.EvnType, e.AgentID)
 }
 
 type EventChangeContact struct {

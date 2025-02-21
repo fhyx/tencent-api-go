@@ -240,6 +240,14 @@ func (s *server) parseEvent(msg *Message, body []byte) (interface{}, error) {
 			return nil, err
 		}
 		return &ev, nil
+	case EventTypeEnterAgent, EventTypeBatchJobResult, EventTypeLocation,
+		EventTypeView, EventTypeClick, EventTypeViewMiniProgram:
+		var ev Event
+		err := xml.Unmarshal(body, &ev)
+		if err != nil {
+			return nil, err
+		}
+		return &ev, nil
 	default:
 		logger().Infow("unknown", "EvnType", msg.EvnType)
 		return nil, fmt.Errorf("unknown event %s from %s", msg.EvnType, msg.FromUserName)
