@@ -147,7 +147,7 @@ func (a *API) ListIDs(cursor string, limit int) (data DeptUsers, err error) {
 
 // ListUser 获取部门成员
 //
-//	此接口已废弃，参见：
+//	此接口对于通讯录同步Secret已停用，参见：
 //	    https://developer.work.weixin.qq.com/document/path/96079
 //	    https://developer.work.weixin.qq.com/document/path/90200
 func (a *API) ListUser(lr ListReq) (ListResult, error) {

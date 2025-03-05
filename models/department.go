@@ -16,6 +16,9 @@ type Department struct {
 	NameEN   string `json:"name_en,omitempty"`  // 英文名称
 	ParentID uint32 `json:"parentid,omitempty"` // 父部门id，32位整型
 	Order    uint32 `json:"order,omitempty"`    // 在父部门中的次序值。order值大的排序靠前。有效的值范围是[0, 2^32)
+
+	// 部门负责人的UserID；
+	Leaders []string `json:"department_leader,omitempty"`
 }
 
 type Departments []Department
