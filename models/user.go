@@ -57,6 +57,24 @@ type Attributes struct {
 	Attrs []Attribute `json:"attrs,omitempty"`
 }
 
+// TextByName 按名字搜索匹配的文本和网址
+func (z *Attributes) TextByName(name string) (string, bool) {
+	if z == nil {
+		return "", false
+	}
+	for _, attr := range z.Attrs {
+		if attr.Name == name {
+			if attr.Text != nil {
+				return attr.Text.Value, true
+			}
+			if attr.Web != nil {
+				return attr.Web.URL, true
+			}
+		}
+	}
+	return "", false
+}
+
 type externalProfile struct {
 	ExternalCorpName string      `json:"external_corp_name,omitempty"`
 	ExternalAttrs    []Attribute `json:"external_attr,omitempty"`
@@ -131,6 +149,13 @@ func (u User) GetEmail() string {
 		return u.BizMail
 	}
 	return u.Email
+}
+
+func (u *User) AttrTextByName(name string) string {
+	if s, ok := u.ExtAttr.TextByName(name); ok {
+		return s
+	}
+	return ""
 }
 
 // Users ...
