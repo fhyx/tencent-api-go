@@ -21,6 +21,8 @@ type Config struct {
 
 	MsgHandler ReceiveHandler // second
 	ReqHandler ReauestHandler // first
+
+	SkipOnlyAvatar bool
 }
 
 type ReceiveHandler interface {
@@ -38,6 +40,7 @@ type Receiver interface {
 }
 
 type server struct {
+	cfg Config
 	cpt *wxbizmsgcrypt.WXBizMsgCrypt
 	mh  ReceiveHandler
 	rh  ReauestHandler
@@ -48,6 +51,7 @@ var _ http.Handler = (*server)(nil)
 
 func NewHandler(cfg Config) Receiver {
 	s := &server{
+		cfg: cfg,
 		cpt: wxbizmsgcrypt.NewWXBizMsgCrypt(
 			cfg.Token, cfg.EncodingKey,
 			cfg.AppID, wxbizmsgcrypt.XmlType),
@@ -151,14 +155,19 @@ func (s *server) notifyMsg(m interface{}) {
 					fmt.Fprintf(&sb, " msg='%s'", s)
 				}
 			}
+			var cs []string
 			if v, ok := m.(ChangesGetter); ok {
-				if cs := v.GetChanges(); len(cs) > 0 {
+				if cs = v.GetChanges(); len(cs) > 0 {
 					fmt.Fprintf(&sb, " chg=%q", strings.Join(cs, ","))
 				}
 			}
 			text := sb.String()
 			if v, ok := m.(AvatarGetter); ok {
 				if uri := v.GetAvatar(); len(uri) > 0 {
+					if s.cfg.SkipOnlyAvatar && len(cs) == 1 {
+						logger().Infow("skip only avatar", "uri", uri)
+						return
+					}
 					s.notifyImage(text, v.GetAvatar())
 					return
 				}
