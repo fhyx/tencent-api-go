@@ -1,5 +1,9 @@
 package webhook
 
+import "strings"
+
+// 参考: https://developer.work.weixin.qq.com/document/path/99110
+
 type Message struct {
 	// 消息类型 text/markdown/image/news
 	MsgType string `json:"msgtype"`
@@ -48,8 +52,14 @@ func NewTextMessage(content string) *Message {
 }
 
 func NewMarkdownMessage(content string) *Message {
+	var mt string
+	if strings.Contains(content, "<font ") || strings.Contains(content, " @") {
+		mt = "markdown"
+	} else {
+		mt = "markdown_v2"
+	}
 	return &Message{
-		MsgType:  "markdown",
+		MsgType:  mt,
 		Markdown: &MessageContent{content},
 	}
 }
