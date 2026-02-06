@@ -2,17 +2,12 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 
 	"go.uber.org/zap"
 
 	talog "daxv.cn/gopak/tencent-api-go/log"
 	"daxv.cn/gopak/tencent-api-go/wxwork/webhook"
-)
-
-const (
-	defaultWebHookUrlTemplate = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=%s"
 )
 
 var (
@@ -42,6 +37,6 @@ func main() {
 
 	msg := webhook.NewTextMessage(text)
 
-	notifier := webhook.NewClient(fmt.Sprintf(defaultWebHookUrlTemplate, botKey))
+	notifier := webhook.NewWithKey(botKey)
 	_ = notifier.Notify(msg)
 }

@@ -3,8 +3,13 @@ package webhook
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
+)
+
+const (
+	DefaultUrlTemplate = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=%s"
 )
 
 var hclient = &http.Client{
@@ -13,6 +18,8 @@ var hclient = &http.Client{
 
 type Notifier interface {
 	Notify(msg *Message) error
+	NotifyMarkdown(text string, mentions ...string) error
+	NotifyText(text string, mentions ...string) error
 }
 
 type client struct {
@@ -21,6 +28,26 @@ type client struct {
 
 func NewClient(uri string) Notifier {
 	return &client{uri}
+}
+
+func NewWithKey(key string) Notifier {
+	return NewClient(fmt.Sprintf(DefaultUrlTemplate, key))
+}
+
+func (c *client) NotifyMarkdown(text string, mentions ...string) error {
+	msg := NewMarkdownMessage(text)
+	if len(mentions) > 0 {
+		msg.MentionedList = mentions
+	}
+	return c.Notify(msg)
+}
+
+func (c *client) NotifyText(text string, mentions ...string) error {
+	msg := NewTextMessage(text)
+	if len(mentions) > 0 {
+		msg.MentionedList = mentions
+	}
+	return c.Notify(msg)
 }
 
 func (c *client) Notify(msg *Message) error {
