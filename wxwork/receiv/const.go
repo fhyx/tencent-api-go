@@ -46,8 +46,10 @@ const (
 	EventTypeViewMiniProgram EventType = "view_miniprogram"
 	// 扫码推事件的事件推送
 	EventTypeScanCodePush EventType = "scancode_push"
-	// 扫码推事件且弹出“消息接收中”提示框的事件推送
+	// 扫码推事件且弹出"消息接收中"提示框的事件推送
 	EventTypeScanCodeWait EventType = "scancode_waitmsg"
+	// EventTypeTemplateCard 模板卡片事件（点击模板卡片按钮）
+	EventTypeTemplateCard EventType = "template_card_event"
 )
 
 // create_user,update_user,delete_user,

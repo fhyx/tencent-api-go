@@ -386,3 +386,26 @@ type EventChangeContactUpdateTag struct {
 	AddPartyItems string `xml:"AddPartyItems"`
 	DelPartyItems string `xml:"DelPartyItems"`
 }
+
+// EventTemplateCardSelectedItem 模板卡片选中项
+type EventTemplateCardSelectedItem struct {
+	QuestionKey string   `xml:"QuestionKey"`           // 问题key
+	OptionIds   []string `xml:"OptionIds>OptionId"`    // 选项ID列表
+}
+
+// EventTemplateCard 模板卡片事件
+type EventTemplateCard struct {
+	Event
+	TaskId        string                            `xml:"TaskId"`          // 任务ID
+	CardType      string                            `xml:"CardType"`        // 卡片类型
+	ResponseCode  string                            `xml:"ResponseCode"`    // 更新卡片用的ResponseCode
+	SelectedItems []EventTemplateCardSelectedItem   `xml:"SelectedItems>SelectedItem"` // 选中项列表
+}
+
+func (e *EventTemplateCard) GetID() string {
+	return e.TaskId
+}
+
+func (e *EventTemplateCard) GetName() string {
+	return e.CardType
+}
