@@ -389,17 +389,53 @@ type EventChangeContactUpdateTag struct {
 
 // EventTemplateCardSelectedItem 模板卡片选中项
 type EventTemplateCardSelectedItem struct {
-	QuestionKey string   `xml:"QuestionKey"`           // 问题key
-	OptionIds   []string `xml:"OptionIds>OptionId"`    // 选项ID列表
+	QuestionKey string   `xml:"QuestionKey"`        // 问题key
+	OptionIds   []string `xml:"OptionIds>OptionId"` // 选项ID列表
 }
 
 // EventTemplateCard 模板卡片事件
+/*
+<xml>
+	<ToUserName><![CDATA[toUser]]></ToUserName>
+	<FromUserName><![CDATA[FromUser]]></FromUserName>
+	<CreateTime>123456789</CreateTime>
+	<MsgType><![CDATA[event]]></MsgType>
+	<Event><![CDATA[template_card_event]]></Event>
+	<EventKey><![CDATA[key111]]></EventKey>
+	<TaskId><![CDATA[taskid111]]></TaskId>
+	<CardType><![CDATA[text_notice]]></CardType>
+	<ResponseCode><![CDATA[ResponseCode]]></ResponseCode>
+	<AgentID>1</AgentID>
+	<SelectedItems>
+	    <SelectedItem>
+	        <QuestionKey><![CDATA[QuestionKey1]]></QuestionKey>
+	        <OptionIds>
+	            <OptionId><![CDATA[OptionId1]]></OptionId>
+	            <OptionId><![CDATA[OptionId2]]></OptionId>
+	        </OptionIds>
+	    </SelectedItem>
+	    <SelectedItem>
+	        <QuestionKey><![CDATA[QuestionKey2]]></QuestionKey>
+	        <OptionIds>
+	            <OptionId><![CDATA[OptionId3]]></OptionId>
+	            <OptionId><![CDATA[OptionId4]]></OptionId>
+	        </OptionIds>
+	    </SelectedItem>
+	</SelectedItems>
+</xml>
+*/
 type EventTemplateCard struct {
 	Event
-	TaskId        string                            `xml:"TaskId"`          // 任务ID
-	CardType      string                            `xml:"CardType"`        // 卡片类型
-	ResponseCode  string                            `xml:"ResponseCode"`    // 更新卡片用的ResponseCode
-	SelectedItems []EventTemplateCardSelectedItem   `xml:"SelectedItems>SelectedItem"` // 选中项列表
+	TaskId string `xml:"TaskId"` // 与发送模板卡片消息时指定的task_id相同
+
+	// 通用模板卡片的类型，
+	// 类型有"text_notice", "news_notice", "button_interaction", "vote_interaction", "multiple_interaction"五种
+	CardType string `xml:"CardType"`
+
+	// 用于调用更新卡片接口的ResponseCode，72小时内有效，且只能使用一次
+	ResponseCode string `xml:"ResponseCode"`
+	// 选中项列表
+	SelectedItems []EventTemplateCardSelectedItem `xml:"SelectedItems>SelectedItem"`
 }
 
 func (e *EventTemplateCard) GetID() string {

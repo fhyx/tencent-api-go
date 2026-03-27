@@ -26,11 +26,11 @@ type Config struct {
 }
 
 type ReceiveHandler interface {
-	OnReceived(ctx context.Context, msg interface{})
+	OnReceived(ctx context.Context, msg any)
 }
 
 type ReauestHandler interface {
-	OnRequest(req *http.Request, msg interface{})
+	OnRequest(req *http.Request, msg any)
 }
 
 type Receiver interface {
@@ -106,6 +106,7 @@ func (s *server) eventHandler(rw http.ResponseWriter, req *http.Request) {
 
 	msg, err := s.parseMsg(decrypted)
 	if err != nil {
+		logger().Infow("parseMsg fail", "err", err, "body", string(body))
 		s.notifyText("error: parseMsg fail: " + err.Error())
 		rw.WriteHeader(http.StatusBadRequest)
 		return
@@ -137,7 +138,7 @@ func (s *server) notifyImage(msg, uri string) {
 	}
 }
 
-func (s *server) notifyMsg(m interface{}) {
+func (s *server) notifyMsg(m any) {
 	if s.nh != nil {
 		if v, ok := m.(fmt.Stringer); ok {
 			var sb strings.Builder
@@ -177,7 +178,7 @@ func (s *server) notifyMsg(m interface{}) {
 	}
 }
 
-func (s *server) parseMsg(body []byte) (interface{}, error) {
+func (s *server) parseMsg(body []byte) (any, error) {
 	msg := new(Message)
 	err := xml.Unmarshal(body, msg)
 	if nil != err {
@@ -202,7 +203,7 @@ func (s *server) parseMsg(body []byte) (interface{}, error) {
 
 }
 
-func (s *server) parseEvent(msg *Message, body []byte) (interface{}, error) {
+func (s *server) parseEvent(msg *Message, body []byte) (any, error) {
 	switch msg.EvnType {
 	case EventTypeChangeContact:
 		var ec EventChangeContact
