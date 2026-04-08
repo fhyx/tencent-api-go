@@ -450,3 +450,8 @@ func (e *EventTemplateCard) GetID() string {
 func (e *EventTemplateCard) GetName() string {
 	return e.CardType
 }
+
+func (e *EventTemplateCard) String() string {
+	return fmt.Sprintf("%s %s %s taskId=%s cardType=%s responseCode=%s selectedItems=%v",
+		e.MsgType, e.EvnType, e.EventKey, e.TaskId, e.CardType, e.ResponseCode, e.SelectedItems)
+}
