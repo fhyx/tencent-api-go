@@ -387,6 +387,11 @@ type EventChangeContactUpdateTag struct {
 	DelPartyItems string `xml:"DelPartyItems"`
 }
 
+func (e *EventChangeContactUpdateTag) String() string {
+	return fmt.Sprintf("%s %s %s tagId=%s addUsers=%s delUsers=%s addParties=%s delParties=%s",
+		e.MsgType, e.EvnType, e.ChangeType, e.TagId, e.AddUserItems, e.DelUserItems, e.AddPartyItems, e.DelPartyItems)
+}
+
 // EventTemplateCardSelectedItem 模板卡片选中项
 type EventTemplateCardSelectedItem struct {
 	QuestionKey string   `xml:"QuestionKey"`        // 问题key
