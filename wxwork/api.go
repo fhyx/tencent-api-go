@@ -1,8 +1,10 @@
 package wxwork
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"daxv.cn/gopak/tencent-api-go/client"
@@ -39,7 +41,7 @@ func NewAPI(strs ...string) *API {
 	}
 
 	if corpID == "" || corpSecret == "" {
-		logger().Infow("corpID or corpSecret are empty or not found")
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "corpID or corpSecret are empty or not found")
 	}
 
 	c := client.NewClient(UriPrefix + "/gettoken")
@@ -137,7 +139,10 @@ func (a *API) ListIDs(cursor string, limit int) (data DeptUsers, err error) {
 	var res listIDsResponse
 	err = a.c.PostObj(uri, &req, &res)
 	if err != nil {
-		logger().Infow("list ids fail", "req", req, "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "list ids fail",
+			slog.Any("req", req),
+			slog.Any("err", err),
+		)
 		return
 	}
 
@@ -164,7 +169,11 @@ func (a *API) ListUser(lr ListReq) (ListResult, error) {
 	var ret usersResponse
 	err := a.c.GetJSON(uri, &ret)
 	if err != nil {
-		logger().Infow("getJSON fail", "uri", uri, "lr", lr, "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "getJSON fail",
+			slog.String("uri", uri),
+			slog.Any("lr", lr),
+			slog.Any("err", err),
+		)
 		return nil, err
 	}
 
@@ -197,7 +206,9 @@ func (a *API) GetUserByOAuth2Code(code string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger().Infow("GetOAuth2User", "ou", ou)
+	logger().LogAttrs(context.Background(), slog.LevelInfo, "GetOAuth2User",
+		slog.Any("ou", ou),
+	)
 	user, err := a.GetUser(ou.UserID)
 	if err != nil {
 		return nil, err
@@ -246,7 +257,10 @@ func (a *API) CountActivity(date string) (count int, err error) {
 	var res activeStatRes
 	err = a.c.PostObj(UriPrefix+"/user/get_active_stat", req, &res)
 	if err != nil {
-		logger().Infow("count activite fail", "date", date, "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "count activite fail",
+			slog.String("date", date),
+			slog.Any("err", err),
+		)
 		return
 	}
 

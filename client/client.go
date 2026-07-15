@@ -2,12 +2,15 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
+	"os"
 )
 
 type Client struct {
@@ -60,10 +63,14 @@ func (c *Client) makeRequest(method, uri string, body io.Reader) (req *http.Requ
 	u.RawQuery = q.Encode()
 	uri = u.String()
 
-	// logger().Debugw("client.do", "method", method, "uri", uri)
+	// logger().Debug("client.do", "method", method, "uri", uri)
 	req, err = http.NewRequest(method, uri, body)
 	if err != nil {
-		logger().Infow("NewRequest fail", "err", err, "method", method, "uri", uri)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "NewRequest fail",
+			slog.Any("err", err),
+			slog.String("method", method),
+			slog.String("uri", uri),
+		)
 		return
 	}
 	if method == "POST" {
@@ -92,20 +99,30 @@ type respFunc func(hdr http.Header, r io.Reader, cl int64) error
 func doRequest(client *http.Client, req *http.Request, rf respFunc) error {
 	resp, e := client.Do(req)
 	if e != nil {
-		logger().Infow("client.do fail", "method", req.Method, "uri", req.RequestURI, "err", e)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "client.do fail",
+			slog.String("method", req.Method),
+			slog.String("uri", req.RequestURI),
+			slog.Any("err", e),
+		)
 		return e
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 300 || resp.StatusCode < 200 {
-		logger().Infow("http fail", "code", resp.StatusCode, "status", resp.Status)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "http fail",
+			slog.Int("code", resp.StatusCode),
+			slog.String("status", resp.Status),
+		)
 		return fmt.Errorf("Expecting HTTP status code 20x, but got %v", resp.StatusCode)
 	}
 
 	if rf != nil {
-		// logger().Debugw("doRequest ok", "status", resp.StatusCode, "length", resp.ContentLength, "uri", req.URL.Path)
+		// logger().Debug("doRequest ok", "status", resp.StatusCode, "length", resp.ContentLength, "uri", req.URL.Path)
 		if err := rf(resp.Header, resp.Body, resp.ContentLength); err != nil {
-			logger().Infow("call respFunc fail", "uri", req.URL.Path, "err", err)
+			logger().LogAttrs(context.Background(), slog.LevelInfo, "call respFunc fail",
+				slog.String("uri", req.URL.Path),
+				slog.Any("err", err),
+			)
 			return err
 		}
 	}
@@ -117,7 +134,9 @@ func doRequestData(client *http.Client, req *http.Request) (out []byte, err erro
 	err = doRequest(client, req, func(_ http.Header, r io.Reader, _ int64) error {
 		rbody, e := io.ReadAll(r)
 		if e != nil {
-			logger().Infow("resp read fail", "err", e)
+			logger().LogAttrs(context.Background(), slog.LevelInfo, "resp read fail",
+				slog.Any("err", e),
+			)
 			return e
 		}
 		out = rbody
@@ -142,7 +161,9 @@ func DoHTTPData(method, uri string, auths string, body io.Reader) (out []byte, e
 	err = DoHTTP(method, uri, auths, body, func(_ http.Header, r io.Reader, _ int64) error {
 		rbody, e := io.ReadAll(r)
 		if e != nil {
-			logger().Infow("resp read fail", "err", e)
+			logger().LogAttrs(context.Background(), slog.LevelInfo, "resp read fail",
+				slog.Any("err", e),
+			)
 			return e
 		}
 		out = rbody
@@ -172,7 +193,10 @@ func (c *Client) GetJSON(uri string, obj any) error {
 		return jsonInto(r, obj)
 	})
 	if err != nil {
-		logger().Infow("GetJSON fail", "uri", uri, "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "GetJSON fail",
+			slog.String("uri", uri),
+			slog.Any("err", err),
+		)
 	}
 	return err
 }
@@ -182,7 +206,11 @@ func (c *Client) PostJSON(uri string, data []byte, obj any) error {
 		return jsonInto(r, obj)
 	})
 	if err != nil {
-		logger().Infow("PostJSON fail", "uri", uri, "data", string(data), "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "PostJSON fail",
+			slog.String("uri", uri),
+			slog.String("data", string(data)),
+			slog.Any("err", err),
+		)
 	}
 	return err
 }
@@ -202,7 +230,11 @@ func (c *Client) PostObj(uri string, in any, res any) (err error) {
 func MustMarshal(obj any) []byte {
 	data, err := json.Marshal(obj)
 	if err != nil {
-		logger().Fatalw("marshal fail", "obj", obj, "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelError, "marshal fail",
+			slog.Any("obj", obj),
+			slog.Any("err", err),
+		)
+		os.Exit(1)
 	}
 	return data
 }
@@ -210,18 +242,27 @@ func MustMarshal(obj any) []byte {
 func jsonInto(r io.Reader, obj any) error {
 	err := json.NewDecoder(r).Decode(obj)
 	if err != nil {
-		logger().Infow("resp decode fail", "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "resp decode fail",
+			slog.Any("err", err),
+		)
 		return err
 	}
 	if ce, ok := obj.(ErrorCoder); ok {
 		if code := ce.GetErrorCode(); code != 0 {
-			logger().Infow("resp has error", "code", code, "msg", ce.GetErrorMsg())
+			logger().LogAttrs(context.Background(), slog.LevelInfo, "resp has error",
+				slog.Int("code", code),
+				slog.String("msg", ce.GetErrorMsg()),
+			)
 			return ce.GetErr()
 		}
 
-		logger().Debugw("resp decode done", "msg", ce.GetErrorMsg())
+		logger().LogAttrs(context.Background(), slog.LevelDebug, "resp decode done",
+			slog.String("msg", ce.GetErrorMsg()),
+		)
 	} else {
-		logger().Debugw("resp decode done", "obj", obj)
+		logger().LogAttrs(context.Background(), slog.LevelDebug, "resp decode done",
+			slog.Any("obj", obj),
+		)
 	}
 
 	return err

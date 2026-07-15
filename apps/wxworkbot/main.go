@@ -2,11 +2,9 @@ package main
 
 import (
 	"flag"
+	"log/slog"
 	"os"
 
-	"go.uber.org/zap"
-
-	talog "daxv.cn/gopak/tencent-api-go/log"
 	"daxv.cn/gopak/tencent-api-go/wxwork/webhook"
 )
 
@@ -21,12 +19,8 @@ func init() {
 }
 
 func main() {
-	lgr, _ := zap.NewDevelopment()
-	defer func() {
-		_ = lgr.Sync() // flushes buffer, if any
-	}()
-	sugar := lgr.Sugar()
-	talog.SetLogger(sugar)
+	currentLogLevel := slog.SetLogLoggerLevel(slog.LevelDebug)
+	defer slog.SetLogLoggerLevel(currentLogLevel)
 
 	flag.Parse()
 

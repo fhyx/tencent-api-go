@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -79,9 +80,13 @@ func (s *server) echoTestHandler(rw http.ResponseWriter, req *http.Request) {
 	echoStr := req.URL.Query().Get("echostr")
 	text, cryptErr := s.cpt.VerifyURL(msgSign, timestamp, nonce, echoStr)
 	if cryptErr != nil {
-		logger().Infow("verifyURL fail", "err", cryptErr,
-			"timestamp", timestamp, "nonce", nonce, "echoStr", echoStr,
-			"query", req.URL.RawQuery)
+		logger().LogAttrs(req.Context(), slog.LevelInfo, "verifyURL fail",
+			slog.Any("err", cryptErr),
+			slog.String("timestamp", timestamp),
+			slog.String("nonce", nonce),
+			slog.String("echoStr", echoStr),
+			slog.String("query", req.URL.RawQuery),
+		)
 		rw.WriteHeader(http.StatusBadRequest)
 		text = []byte(fmt.Sprintf("error#%04d: %s", cryptErr.ErrCode, cryptErr.ErrMsg))
 	}
@@ -99,14 +104,19 @@ func (s *server) eventHandler(rw http.ResponseWriter, req *http.Request) {
 	}
 	decrypted, cryptErr := s.cpt.DecryptMsg(msgSign, timestamp, nonce, body)
 	if nil != cryptErr {
-		logger().Infow("decrypt fail", "err", cryptErr)
+		logger().LogAttrs(req.Context(), slog.LevelInfo, "decrypt fail",
+			slog.Any("err", cryptErr),
+		)
 		s.notifyText("error: decrypt fail: " + cryptErr.Error())
 		return
 	}
 
 	msg, err := s.parseMsg(decrypted)
 	if err != nil {
-		logger().Infow("parseMsg fail", "err", err, "body", string(body))
+		logger().LogAttrs(req.Context(), slog.LevelInfo, "parseMsg fail",
+			slog.Any("err", err),
+			slog.String("body", string(body)),
+		)
 		s.notifyText("error: parseMsg fail: " + err.Error())
 		rw.WriteHeader(http.StatusBadRequest)
 		return
@@ -116,7 +126,7 @@ func (s *server) eventHandler(rw http.ResponseWriter, req *http.Request) {
 	} else if s.mh != nil {
 		s.mh.OnReceived(req.Context(), msg)
 	} else {
-		logger().Infow("without handler")
+		logger().LogAttrs(req.Context(), slog.LevelInfo, "without handler")
 	}
 	s.notifyMsg(msg)
 
@@ -126,7 +136,7 @@ func (s *server) notifyText(msg string) {
 	if s.nh != nil {
 		_ = s.nh.Notify(webhook.NewTextMessage(msg))
 	} else {
-		logger().Infow("notifier is nil")
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "notifier is nil")
 	}
 }
 
@@ -134,7 +144,7 @@ func (s *server) notifyImage(msg, uri string) {
 	if s.nh != nil {
 		_ = s.nh.Notify(webhook.NewMarkdownMessage(fmt.Sprintf("%s ![image](%s)", msg, uri)))
 	} else {
-		logger().Infow("notifier is nil")
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "notifier is nil")
 	}
 }
 
@@ -166,7 +176,9 @@ func (s *server) notifyMsg(m any) {
 			if v, ok := m.(AvatarGetter); ok {
 				if uri := v.GetAvatar(); len(uri) > 0 {
 					if s.cfg.SkipOnlyAvatar && len(cs) == 1 {
-						logger().Infow("skip only avatar", "uri", uri)
+						logger().LogAttrs(context.Background(), slog.LevelInfo, "skip only avatar",
+							slog.String("uri", uri),
+						)
 						return
 					}
 					s.notifyImage(text, v.GetAvatar())
@@ -182,9 +194,15 @@ func (s *server) parseMsg(body []byte) (any, error) {
 	msg := new(Message)
 	err := xml.Unmarshal(body, msg)
 	if nil != err {
-		logger().Infow("xml decode failed", "body", string(body), "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "xml decode failed",
+			slog.String("body", string(body)),
+			slog.Any("err", err),
+		)
 	} else {
-		logger().Infow("xml decode ok", "body", string(body), "msg", msg)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "xml decode ok",
+			slog.String("body", string(body)),
+			slog.Any("msg", msg),
+		)
 	}
 
 	switch msg.MsgType {
@@ -197,7 +215,9 @@ func (s *server) parseMsg(body []byte) (any, error) {
 		// s.notifyText(fmt.Sprintf("got msg event: %s, change: %s", msg.Event, msg.ChangeType))
 		return s.parseEvent(msg, body)
 	default:
-		logger().Infow("unknown", "MsgType", msg.MsgType)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "unknown",
+			slog.Any("MsgType", msg.MsgType),
+		)
 		return nil, fmt.Errorf("unknown msg '%s'", msg.MsgType)
 	}
 
@@ -266,7 +286,9 @@ func (s *server) parseEvent(msg *Message, body []byte) (any, error) {
 		}
 		return &ev, nil
 	default:
-		logger().Infow("unknown", "EvnType", msg.EvnType)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "unknown",
+			slog.Any("EvnType", msg.EvnType),
+		)
 		return nil, fmt.Errorf("unknown event %s from %s", msg.EvnType, msg.FromUserName)
 	}
 }

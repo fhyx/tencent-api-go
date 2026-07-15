@@ -2,8 +2,10 @@ package webhook
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -52,24 +54,37 @@ func (c *client) NotifyText(text string, mentions ...string) error {
 
 func (c *client) Notify(msg *Message) error {
 	if len(c.uri) == 0 {
-		logger().Infow("empty uri, notify to log", "msg", msg)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "empty uri, notify to log",
+			slog.Any("msg", msg),
+		)
 		return nil
 	}
 	b, err := json.Marshal(msg)
 	if err != nil {
-		logger().Infow("marshal fail", "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "marshal fail",
+			slog.Any("err", err),
+		)
 		return err
 	}
 	body := bytes.NewReader(b)
 	resp, err := hclient.Post(c.uri, "application/json; charset=UTF-8", body)
 	if err != nil {
-		logger().Infow("notify fail", "err", err, "msg", msg)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "notify fail",
+			slog.Any("err", err),
+			slog.Any("msg", msg),
+		)
 		return err
 	}
 	if resp.StatusCode > 300 {
-		logger().Infow("notified", "msg", msg, "status", resp.Status)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "notified",
+			slog.Any("msg", msg),
+			slog.String("status", resp.Status),
+		)
 	} else {
-		logger().Debugw("notified", "msg", msg, "status", resp.StatusCode)
+		logger().LogAttrs(context.Background(), slog.LevelDebug, "notified",
+			slog.Any("msg", msg),
+			slog.Int("status", resp.StatusCode),
+		)
 	}
 	_ = resp.Body.Close()
 

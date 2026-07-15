@@ -1,7 +1,9 @@
 package exmail
 
 import (
+	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 
@@ -28,15 +30,19 @@ type API struct {
 // apps: Contact, Login, Check
 func New(apiCat string) *API {
 	if corpId == "" {
-		logger().Fatalw("EXMAIL_CORP_ID is empty or not found")
+		logger().LogAttrs(context.Background(), slog.LevelError, "EXMAIL_CORP_ID is empty or not found")
+		os.Exit(1)
 	}
 	if apiCat == "" {
-		logger().Warnw("empty apiCat")
+		logger().LogAttrs(context.Background(), slog.LevelWarn, "empty apiCat")
 	}
 	k := fmt.Sprintf("EXMAIL_API_%s_SECRET", strings.ToUpper(apiCat))
 	corpSecret := os.Getenv(k)
 	if corpSecret == "" {
-		logger().Fatalw("corp secret empty or not found", "key", k)
+		logger().LogAttrs(context.Background(), slog.LevelError, "corp secret empty or not found",
+			slog.String("key", k),
+		)
+		os.Exit(1)
 	}
 	c := client.NewClient(urlToken)
 	c.SetContentType("application/json")

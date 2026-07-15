@@ -1,9 +1,11 @@
 package exmail
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 
 	"daxv.cn/gopak/tencent-api-go/client"
 	"daxv.cn/gopak/tencent-api-go/gender"
@@ -69,7 +71,9 @@ func GetLoginURL(alias string) (s string, err error) {
 		log.Print(err)
 		return "", err
 	}
-	logger().Debugw("GetLoginURL", "url", u)
+	logger().LogAttrs(context.Background(), slog.LevelDebug, "GetLoginURL",
+		slog.String("url", u),
+	)
 
 	s = obj.LoginUrl
 
@@ -90,7 +94,9 @@ func CountNewMail(alias string) (c int, err error) {
 	if err != nil {
 		return 0, err
 	}
-	logger().Debugw("CountNewMail %s", u)
+	logger().LogAttrs(context.Background(), slog.LevelDebug,
+		fmt.Sprintf("CountNewMail %s", u),
+	)
 
 	count, err := obj.NewCount.Int64()
 	if err != nil {

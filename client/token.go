@@ -2,9 +2,11 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 )
 
@@ -60,13 +62,17 @@ func (th *TokenHolder) Valid() bool {
 
 func (th *TokenHolder) GetAuthToken() (token string, err error) {
 	if !th.Valid() {
-		logger().Infow("token is nil or expired, refreshing it")
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "token is nil or expired, refreshing it")
 		th.currToken, err = th.requestToken()
 		if err != nil {
-			logger().Infow("GetAuthToken fail", "err", err)
+			logger().LogAttrs(context.Background(), slog.LevelInfo, "GetAuthToken fail",
+				slog.Any("err", err),
+			)
 			return "", err
 		}
-		logger().Infow("GetAuthToken ok", "token", th.currToken)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "GetAuthToken ok",
+			slog.Any("token", th.currToken),
+		)
 		th.expiresAt = time.Now().Unix() + th.currToken.ExpiresIn
 	}
 	token = th.currToken.AccessToken
@@ -88,19 +94,26 @@ func (th *TokenHolder) requestToken() (token *Token, err error) {
 	}
 
 	if err != nil {
-		logger().Infow("doHTTP fail", "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "doHTTP fail",
+			slog.Any("err", err),
+		)
 		return
 	}
 
 	obj := &Token{}
 	err = json.Unmarshal(resp, obj)
 	if err != nil {
-		logger().Infow("json.unmarshal fail", "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "json.unmarshal fail",
+			slog.Any("err", err),
+		)
 		return
 	}
 	if obj.ErrCode != 0 {
 		err = obj.GetErr()
-		logger().Infow("request token fail", "uri", uri, "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "request token fail",
+			slog.String("uri", uri),
+			slog.Any("err", err),
+		)
 		return
 	}
 

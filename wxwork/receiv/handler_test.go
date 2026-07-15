@@ -2,46 +2,54 @@ package receiv
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"testing"
-
-	"go.uber.org/zap"
-
-	"daxv.cn/gopak/tencent-api-go/log"
-	"daxv.cn/gopak/tencent-api-go/wxwork/webhook"
 )
 
 func TestMain(m *testing.M) {
-	lgr, _ := zap.NewDevelopment()
-	defer func() {
-		_ = lgr.Sync() // flushes buffer, if any
-	}()
-	sugar := lgr.Sugar()
-	log.SetLogger(sugar)
+	currentLogLevel := slog.SetLogLoggerLevel(slog.LevelDebug)
+	defer slog.SetLogLoggerLevel(currentLogLevel)
 
 	os.Exit(m.Run())
 }
 
 type api struct{}
 
-func (a *api) OnReceived(ctx context.Context, msg interface{}) {
+func (a *api) OnReceived(ctx context.Context, msg any) {
 	switch obj := msg.(type) {
 	case *EventChangeContactCreateUser:
-		logger().Infow("got EventChangeContactCreateUser", "obj", obj)
+		logger().LogAttrs(ctx, slog.LevelInfo, "got EventChangeContactCreateUser",
+			slog.Any("obj", obj),
+		)
 	case *EventChangeContactUpdateUser:
-		logger().Infow("got EventChangeContactUpdateUser", "obj", obj)
+		logger().LogAttrs(ctx, slog.LevelInfo, "got EventChangeContactUpdateUser",
+			slog.Any("obj", obj),
+		)
 	case *EventChangeContactDeleteUser:
-		logger().Infow("got EventChangeContactDeleteUser", "obj", obj)
+		logger().LogAttrs(ctx, slog.LevelInfo, "got EventChangeContactDeleteUser",
+			slog.Any("obj", obj),
+		)
 	case *EventChangeContactCreateParty:
-		logger().Infow("got EventChangeContactCreateParty", "obj", obj)
+		logger().LogAttrs(ctx, slog.LevelInfo, "got EventChangeContactCreateParty",
+			slog.Any("obj", obj),
+		)
 	case *EventChangeContactUpdateParty:
-		logger().Infow("got EventChangeContactUpdateParty", "obj", obj)
+		logger().LogAttrs(ctx, slog.LevelInfo, "got EventChangeContactUpdateParty",
+			slog.Any("obj", obj),
+		)
 	case *EventSysApprovalChange:
-		logger().Infow("got EventSysApprovalChange", "obj", obj)
+		logger().LogAttrs(ctx, slog.LevelInfo, "got EventSysApprovalChange",
+			slog.Any("obj", obj),
+		)
 	case *EventTemplateCard:
-		logger().Infow("got EventTemplateCard", "obj", obj)
+		logger().LogAttrs(ctx, slog.LevelInfo, "got EventTemplateCard",
+			slog.Any("obj", obj),
+		)
 	default:
-		logger().Infow("unhandled", "msg", msg)
+		logger().LogAttrs(ctx, slog.LevelInfo, "unhandled",
+			slog.Any("msg", msg),
+		)
 	}
 }
 
@@ -55,18 +63,15 @@ func TestHandler(t *testing.T) {
 
 	body := "<xml><ToUserName><![CDATA[" + cfg.AppID + "]]></ToUserName><FromUserName><![CDATA[sys]]></FromUserName><CreateTime>1653577739</CreateTime><MsgType><![CDATA[event]]></MsgType><Event><![CDATA[sys_approval_change]]></Event><AgentID>3010040</AgentID><ApprovalInfo><SpNo>202205260001</SpNo><SpName><![CDATA[通用审批]]></SpName><SpStatus>1</SpStatus><TemplateId><![CDATA[C4NyFZG4u4aFe5HQzEVCJYSSVrVK8rokifSiPLXHi]]></TemplateId><ApplyTime>1653577739</ApplyTime><Applyer><UserId><![CDATA[liutao]]></UserId><Party><![CDATA[1]]></Party></Applyer><SpRecord><SpStatus>1</SpStatus><ApproverAttr>1</ApproverAttr><Details><Approver><UserId><![CDATA[liutao]]></UserId></Approver><Speech><![CDATA[]]></Speech><SpStatus>1</SpStatus><SpTime>0</SpTime></Details></SpRecord><Notifyer><UserId><![CDATA[XieChaoNing]]></UserId></Notifyer><StatuChangeEvent>1</StatuChangeEvent></ApprovalInfo></xml>"
 
-	s := &server{}
-	if len(cfg.NotifyURI) > 0 {
-		s.nh = webhook.NewClient(cfg.NotifyURI)
-	}
-	msg, err := s.parseMsg([]byte(body))
+	s := NewHandler(cfg)
+	msg, err := s.(*server).parseMsg([]byte(body))
 	if err != nil {
 		t.Errorf("parseMsg fail: %s", err)
 		return
 	}
 
 	a.OnReceived(context.Background(), msg)
-	s.notifyMsg(msg)
+	s.(*server).notifyMsg(msg)
 
 }
 

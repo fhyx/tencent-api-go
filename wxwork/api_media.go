@@ -1,7 +1,9 @@
 package wxwork
 
 import (
+	"context"
 	"io"
+	"log/slog"
 	"mime"
 	"net/http"
 	"net/url"
@@ -14,13 +16,18 @@ type MediaFunc func(filename string, body io.Reader, cl int64) error
 
 func (a *API) GetMedia(mediaID string, mf MediaFunc) error {
 	err := a.c.Do("GET", UriPrefix+"/media/get?media_id="+mediaID, nil, func(hdr http.Header, r io.Reader, cl int64) error {
-		logger().Infow(" header info ", "header ", hdr, "media id ", mediaID)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "header info",
+			slog.Any("header", hdr),
+			slog.String("media id", mediaID),
+		)
 
 		filename := mediaID
 
 		_, params, err := mime.ParseMediaType(hdr.Get("content-disposition"))
 		if err != nil {
-			logger().Infow("get content disposition fail", "err", err)
+			logger().LogAttrs(context.Background(), slog.LevelInfo, "get content disposition fail",
+				slog.Any("err", err),
+			)
 		}
 		if f, ok := params["filename"]; ok {
 			filename = f
@@ -39,7 +46,9 @@ func (a *API) GetMedia(mediaID string, mf MediaFunc) error {
 		return nil
 	})
 	if err != nil {
-		logger().Infow("get media fail", "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "get media fail",
+			slog.Any("err", err),
+		)
 		return err
 	}
 	return nil
@@ -48,7 +57,9 @@ func (a *API) GetMedia(mediaID string, mf MediaFunc) error {
 func GetFilenameRegex(s string) (filename string) {
 	matchs := validFilenameRegex.FindStringSubmatch(s)
 	if matchs == nil {
-		logger().Infow("failed to match", "content-disposition", s)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "failed to match",
+			slog.String("content-disposition", s),
+		)
 	}
 	for k, m := range matchs {
 		if k == 1 && m != "" {
@@ -57,6 +68,8 @@ func GetFilenameRegex(s string) (filename string) {
 			}
 		}
 	}
-	logger().Infow("regexp matched", "filename", filename)
+	logger().LogAttrs(context.Background(), slog.LevelInfo, "regexp matched",
+		slog.String("filename", filename),
+	)
 	return filename
 }

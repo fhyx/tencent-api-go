@@ -2,6 +2,7 @@ package wxbizmsgcrypt
 
 import (
 	"bytes"
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/sha1"
@@ -9,6 +10,7 @@ import (
 	"encoding/binary"
 	"encoding/xml"
 	"fmt"
+	"log/slog"
 	"math/rand"
 	"sort"
 	"strings"
@@ -245,8 +247,12 @@ func (self *WXBizMsgCrypt) VerifyURL(msg_signature, timestamp, nonce, echostr st
 	signature := self.calSignature(timestamp, nonce, echostr)
 
 	if strings.Compare(signature, msg_signature) != 0 {
-		logger().Infow("mismatch", "signature", signature, "msg_signature", msg_signature,
-			"token", self.token, "enckey", self.encoding_aeskey, "appid", self.receiver_id,
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "mismatch",
+			slog.String("signature", signature),
+			slog.String("msg_signature", msg_signature),
+			slog.String("token", self.token),
+			slog.String("enckey", self.encoding_aeskey),
+			slog.String("appid", self.receiver_id),
 		)
 		return nil, NewCryptError(ValidateSignatureError, "signature not equal")
 	}
@@ -263,8 +269,10 @@ func (self *WXBizMsgCrypt) VerifyURL(msg_signature, timestamp, nonce, echostr st
 
 	if len(self.receiver_id) > 0 && strings.Compare(string(receiver_id), self.receiver_id) != 0 {
 		// fmt.Println(string(receiver_id), self.receiver_id, len(receiver_id), len(self.receiver_id))
-		logger().Infow("invalid request params",
-			"receiver_id", receiver_id, "self.receiver_id", self.receiver_id)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "invalid request params",
+			slog.String("receiver_id", string(receiver_id)),
+			slog.String("self.receiver_id", self.receiver_id),
+		)
 		return nil, NewCryptError(ValidateCorpidError, "receiverID not equal")
 	}
 

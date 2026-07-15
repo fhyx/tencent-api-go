@@ -1,9 +1,5 @@
 package wxbizmsgcrypt
 
-import (
-	"daxv.cn/gopak/tencent-api-go/log"
-)
+import "log/slog"
 
-func logger() log.Logger {
-	return log.GetLogger()
-}
+func logger() *slog.Logger { return slog.Default() }

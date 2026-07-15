@@ -1,21 +1,14 @@
 package wxwork
 
 import (
+	"log/slog"
 	"os"
 	"testing"
-
-	"go.uber.org/zap"
-
-	"daxv.cn/gopak/tencent-api-go/log"
 )
 
 func TestMain(m *testing.M) {
-	lgr, _ := zap.NewDevelopment()
-	defer func() {
-		_ = lgr.Sync() // flushes buffer, if any
-	}()
-	sugar := lgr.Sugar()
-	log.SetLogger(sugar)
+	currentLogLevel := slog.SetLogLoggerLevel(slog.LevelDebug)
+	defer slog.SetLogLoggerLevel(currentLogLevel)
 
 	ret := m.Run()
 

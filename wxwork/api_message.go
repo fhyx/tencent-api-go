@@ -1,8 +1,10 @@
 package wxwork
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"strings"
 
 	"daxv.cn/gopak/tencent-api-go/client"
@@ -68,7 +70,10 @@ func (a *API) execMessageSend(req *reqMessage) (*respMessageSend, error) {
 	var resp respMessageSend
 	err := a.c.PostJSON(UriPrefix+"/message/send", client.MustMarshal(req), &resp)
 	if err != nil {
-		logger().Infow("execMessageSend fail", "req", req, "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "execMessageSend fail",
+			slog.Any("req", req),
+			slog.Any("err", err),
+		)
 		return nil, err
 	}
 
@@ -80,7 +85,10 @@ func (a *API) execAppchatSend(req *reqMessage) (*respMessageSend, error) {
 	var resp respMessageSend
 	err := a.c.PostJSON(UriPrefix+"/appchat/send", client.MustMarshal(req), &resp)
 	if err != nil {
-		logger().Infow("execAppchatSend fail", "req", req, "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "execAppchatSend fail",
+			slog.Any("req", req),
+			slog.Any("err", err),
+		)
 		return nil, err
 	}
 
@@ -123,7 +131,9 @@ func (a *API) sendMessage(recipient *Recipient, msgtype string, content map[stri
 	}
 
 	if err != nil {
-		logger().Infow("sendMessage fail", "err", err)
+		logger().LogAttrs(context.Background(), slog.LevelInfo, "sendMessage fail",
+			slog.Any("err", err),
+		)
 		return err
 	}
 
