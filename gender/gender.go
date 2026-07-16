@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ErrInvalidGender = errors.New("Invalid Gender value")
+	ErrInvalidGender = errors.New("invalid gender value")
 )
 
 type Gender uint8
@@ -20,15 +20,15 @@ const (
 var genderKeys = []string{"unknown", "male", "female"}
 
 // fmt.Stringer
-func (this Gender) String() string {
-	if this >= Unknown && this <= Female {
-		return genderKeys[this]
+func (g Gender) String() string {
+	if g >= Unknown && g <= Female {
+		return genderKeys[g]
 	}
 	return "unknown"
 }
 
-func (this Gender) MarshalJSON() ([]byte, error) {
-	switch this {
+func (g Gender) MarshalJSON() ([]byte, error) {
+	switch g {
 	case Male:
 		return []byte{'"', 'm', '"'}, nil
 	case Female:
@@ -37,9 +37,9 @@ func (this Gender) MarshalJSON() ([]byte, error) {
 	return []byte{'"', 'u', '"'}, nil
 }
 
-func (this *Gender) UnmarshalJSON(b []byte) (err error) {
+func (g *Gender) UnmarshalJSON(b []byte) (err error) {
 	if len(b) == 0 {
-		*this = Unknown
+		*g = Unknown
 		return
 	}
 	r := bytes.Runes(b)
@@ -48,11 +48,11 @@ func (this *Gender) UnmarshalJSON(b []byte) (err error) {
 	}
 	switch c := r[0]; c {
 	case 'm', 'M', '1', '男':
-		*this = Male
+		*g = Male
 	case 'f', 'F', '2', '女':
-		*this = Female
+		*g = Female
 	case 'u', 'U', '0':
-		*this = Unknown
+		*g = Unknown
 	default:
 		err = ErrInvalidGender
 	}

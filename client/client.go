@@ -106,14 +106,14 @@ func doRequest(client *http.Client, req *http.Request, rf respFunc) error {
 		)
 		return e
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= 300 || resp.StatusCode < 200 {
 		logger().LogAttrs(context.Background(), slog.LevelInfo, "http fail",
 			slog.Int("code", resp.StatusCode),
 			slog.String("status", resp.Status),
 		)
-		return fmt.Errorf("Expecting HTTP status code 20x, but got %v", resp.StatusCode)
+		return fmt.Errorf("expecting HTTP status code 20x, but got %d", resp.StatusCode)
 	}
 
 	if rf != nil {
